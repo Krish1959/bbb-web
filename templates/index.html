@@ -12,22 +12,23 @@
       background: #121b2f; border: 1px solid #223055; border-radius: 16px;
       padding: 28px 24px; box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
-    h1 { margin: 0 0 10px; letter-spacing: .4px; font-size: 1.6rem; }
+    h1 { margin: 0 0 6px; letter-spacing: .4px; font-size: 1.5rem; }
+    .version { color: #5a6a8a; font-size: .75rem; margin-bottom: 12px; }
     .sub { color: #b8c5e6; margin: 0 0 18px; line-height: 1.5; font-size: .95rem; }
-    label { display: block; margin-top: 16px; font-weight: 600; font-size: .9rem; }
+    label { display: block; margin-top: 14px; font-weight: 600; font-size: .9rem; }
     input {
-      width: 100%; padding: 12px; border-radius: 10px;
+      width: 100%; padding: 11px 12px; border-radius: 10px;
       border: 1px solid #2b3a64; background: #0c1427; color: #eaf0ff;
       font-size: .95rem; outline: none; margin-top: 4px;
     }
-    input:focus { border-color: #6aa7ff; box-shadow: 0 0 0 2px rgba(106,167,255,.15); }
+    input:focus { border-color: #6aa7ff; }
     .btn {
-      margin-top: 22px; width: 100%; padding: 14px 16px; border-radius: 12px;
+      margin-top: 20px; width: 100%; padding: 14px 16px; border-radius: 12px;
       border: 0; background: #2c7dff; color: white; font-weight: 700;
-      font-size: 1rem; cursor: pointer; transition: filter .15s;
+      font-size: 1rem; cursor: pointer;
     }
     .btn:hover { filter: brightness(1.08); }
-    .btn:disabled { opacity: .6; cursor: wait; }
+    .btn:disabled { opacity: .5; cursor: wait; }
     .errors {
       background: #3a1b1b; border: 1px solid #ff6a6a; border-radius: 12px;
       padding: 14px 16px; margin-bottom: 14px;
@@ -35,31 +36,58 @@
     .errors strong { color: #ff9a9a; }
     .errors ul { margin: 8px 0 0; padding-left: 18px; }
     .errors li { margin: 5px 0; font-size: .9rem; }
-    .footer { text-align: center; margin-top: 28px; color: #5a6a8a; font-size: .8rem; }
-    .spinner { display: none; }
-    .btn.loading .spinner { display: inline-block; margin-right: 6px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner svg { animation: spin .8s linear infinite; vertical-align: middle; }
+
+    /* Debug box */
+    .debug-section { margin-top: 24px; }
+    .debug-section h3 { margin: 0 0 8px; font-size: 1rem; color: #8fa8d6; }
+    .debug-box {
+      background: #0a0e1a; border: 1px solid #1e2d4d; border-radius: 10px;
+      padding: 14px; font-family: 'Courier New', monospace; font-size: .8rem;
+      line-height: 1.5; color: #c0d0f0; white-space: pre-wrap; word-break: break-all;
+      max-height: 500px; overflow-y: auto;
+    }
+    .debug-box:empty { display: none; }
+
+    /* Status badges */
+    .status-bar { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      display: inline-block; padding: 5px 12px; border-radius: 16px;
+      font-size: .78rem; font-weight: 600;
+    }
+    .badge.ok { background: #0e3a1a; color: #4ade80; border: 1px solid #166534; }
+    .badge.fail { background: #3a1b1b; color: #ff6a6a; border: 1px solid #7f1d1d; }
+
+    .footer { text-align: center; margin-top: 28px; color: #5a6a8a; font-size: .78rem; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>{{ title }}</h1>
-      <p class="sub">Step 1: Submit your details — we'll scrape your website and generate a Database file for your review.</p>
+      <div class="version">v{{ version }}</div>
+      <p class="sub">Submit details — we'll scrape the website, generate a HeyGen context file, push to GitHub, and email for review.</p>
 
       {% if errors %}
       <div class="errors">
-        <strong>Please fix the following:</strong>
-        <ul>
-          {% for e in errors %}
-            <li>{{ e }}</li>
-          {% endfor %}
-        </ul>
+        <strong>Please fix:</strong>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
       </div>
       {% endif %}
 
-      <form method="POST" action="/submit" id="onboard-form">
+      {% if submitted %}
+      <div class="status-bar">
+        {% if csv_ok %}<span class="badge ok">GitHub CSV: OK</span>
+        {% else %}<span class="badge fail">GitHub CSV: FAIL</span>{% endif %}
+
+        {% if ctx_ok %}<span class="badge ok">GitHub Context: OK</span>
+        {% else %}<span class="badge fail">GitHub Context: FAIL</span>{% endif %}
+
+        {% if email_sent %}<span class="badge ok">Email: Sent</span>
+        {% else %}<span class="badge fail">Email: Not Sent</span>{% endif %}
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/submit" id="f">
         <label for="name">Name</label>
         <input id="name" name="name" placeholder="Your name"
                value="{{ (form.name if form else '') }}" required />
@@ -80,28 +108,26 @@
         <input id="web_url" name="web_url" placeholder="https://example.com"
                value="{{ (form.web_url if form else '') }}" required />
 
-        <button class="btn" type="submit" id="submit-btn">
-          <span class="spinner">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83
-                       M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-            </svg>
-          </span>
-          Submit
-        </button>
+        <button class="btn" type="submit" id="btn">Submit</button>
       </form>
+
+      <!-- DEBUG OUTPUT -->
+      {% if debug_log %}
+      <div class="debug-section">
+        <h3>Debug Log (v{{ version }})</h3>
+        <div class="debug-box" id="dbg">{{ debug_log }}</div>
+      </div>
+      {% endif %}
+
     </div>
-    <div class="footer">Powered by LiveAvatar · Agentic Process Automation</div>
+    <div class="footer">Powered by LiveAvatar &middot; Agentic Process Automation &middot; v{{ version }}</div>
   </div>
 
   <script>
-    document.getElementById('onboard-form').addEventListener('submit', function () {
-      var btn = document.getElementById('submit-btn');
-      btn.disabled = true;
-      btn.classList.add('loading');
-      btn.querySelector('span:last-child') || (btn.innerHTML =
-        '<span class="spinner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></span> Scraping & Generating...');
+    document.getElementById('f').addEventListener('submit', function () {
+      var b = document.getElementById('btn');
+      b.disabled = true;
+      b.textContent = 'Processing... (scraping + pushing)';
     });
   </script>
 </body>
