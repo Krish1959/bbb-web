@@ -454,7 +454,7 @@ def append_to_csv_on_github(form_data: dict):
         writer.writerow(row)
         new_content = output.getvalue()
 
-    github_put_file(csv_path, new_content, f"Add submission: {form_data['company']} – {timestamp}")
+    return github_put_file(csv_path, new_content, f"Add submission: {form_data['company']} – {timestamp}")
 
 
 def push_context_to_github(short_name: str, context_content: str):
@@ -548,7 +548,13 @@ def submit():
 
     # ── Step 1a: Scrape the website ──
     log.info(f"🔍 Scraping {form_data['web_url']}...")
-    scraped = scrape_website(form_data["web_url"])
+    try:
+        scraped = scrape_website(form_data["web_url"])
+    except Exception as exc:
+        log.error(f"Scrape crashed: {exc}")
+        scraped = {"url": form_data["web_url"], "title": "", "description": "",
+                   "text_blocks": [], "internal_links": [], "social_links": [],
+                   "emails_found": [], "phones_found": [], "error": str(exc)}
 
     if scraped.get("error"):
         log.warning(f"Scrape had errors: {scraped['error']}")
@@ -558,19 +564,25 @@ def submit():
     short_name = extract_short_name(form_data["web_url"])
 
     # ── Step 1c: Push submissions.csv to GitHub ──
+    csv_ok = False
     try:
-        append_to_csv_on_github(form_data)
+        csv_ok = append_to_csv_on_github(form_data)
     except Exception as exc:
         log.error(f"CSV push failed: {exc}")
 
     # ── Step 1d: Push context file to GitHub ──
+    ctx_ok = False
     try:
-        push_context_to_github(short_name, context_content)
+        ctx_ok = push_context_to_github(short_name, context_content)
     except Exception as exc:
         log.error(f"Context push failed: {exc}")
 
     # ── Step 1e: Send email for human vetting ──
-    email_sent = send_vetting_email(form_data["email"], form_data["company"], context_content)
+    email_sent = False
+    try:
+        email_sent = send_vetting_email(form_data["email"], form_data["company"], context_content)
+    except Exception as exc:
+        log.error(f"Email send crashed: {exc}")
 
     return render_template(
         "success.html",
@@ -578,6 +590,7 @@ def submit():
         form=form_data,
         short_name=short_name,
         email_sent=email_sent,
+        github_ok=csv_ok and ctx_ok,
     )
 
 
