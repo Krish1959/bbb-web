@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; background: #0b1220; color: #eaf0ff; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+    .card {
+      background: #121b2f; border: 1px solid #223055; border-radius: 16px;
+      padding: 28px 24px; box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    }
+    h1 { margin: 0 0 10px; letter-spacing: .4px; font-size: 1.6rem; }
+    .sub { color: #b8c5e6; margin: 0 0 18px; line-height: 1.5; font-size: .95rem; }
+    label { display: block; margin-top: 16px; font-weight: 600; font-size: .9rem; }
+    input {
+      width: 100%; padding: 12px; border-radius: 10px;
+      border: 1px solid #2b3a64; background: #0c1427; color: #eaf0ff;
+      font-size: .95rem; outline: none; margin-top: 4px;
+    }
+    input:focus { border-color: #6aa7ff; box-shadow: 0 0 0 2px rgba(106,167,255,.15); }
+    .btn {
+      margin-top: 22px; width: 100%; padding: 14px 16px; border-radius: 12px;
+      border: 0; background: #2c7dff; color: white; font-weight: 700;
+      font-size: 1rem; cursor: pointer; transition: filter .15s;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { opacity: .6; cursor: wait; }
+    .errors {
+      background: #3a1b1b; border: 1px solid #ff6a6a; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 14px;
+    }
+    .errors strong { color: #ff9a9a; }
+    .errors ul { margin: 8px 0 0; padding-left: 18px; }
+    .errors li { margin: 5px 0; font-size: .9rem; }
+    .footer { text-align: center; margin-top: 28px; color: #5a6a8a; font-size: .8rem; }
+    .spinner { display: none; }
+    .btn.loading .spinner { display: inline-block; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner svg { animation: spin .8s linear infinite; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>{{ title }}</h1>
+      <p class="sub">Step 1: Submit your details — we'll scrape your website and generate a HeyGen context file for review.</p>
+
+      {% if errors %}
+      <div class="errors">
+        <strong>Please fix the following:</strong>
+        <ul>
+          {% for e in errors %}
+            <li>{{ e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/submit" id="onboard-form">
+        <label for="name">Name</label>
+        <input id="name" name="name" placeholder="Your name"
+               value="{{ (form.name if form else '') }}" required />
+
+        <label for="company">Company</label>
+        <input id="company" name="company" placeholder="Company / Institution"
+               value="{{ (form.company if form else '') }}" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="name@company.com"
+               value="{{ (form.email if form else '') }}" required />
+
+        <label for="phone">Phone (optional)</label>
+        <input id="phone" name="phone" placeholder="+65 9xxxxxxx"
+               value="{{ (form.phone if form else '') }}" />
+
+        <label for="web_url">Web URL</label>
+        <input id="web_url" name="web_url" placeholder="https://example.com"
+               value="{{ (form.web_url if form else '') }}" required />
+
+        <button class="btn" type="submit" id="submit-btn">
+          <span class="spinner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83
+                       M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </span>
+          Submit
+        </button>
+      </form>
+    </div>
+    <div class="footer">Powered by LiveAvatar · Agentic Process Automation</div>
+  </div>
+
+  <script>
+    document.getElementById('onboard-form').addEventListener('submit', function () {
+      var btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.classList.add('loading');
+      btn.querySelector('span:last-child') || (btn.innerHTML =
+        '<span class="spinner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></span> Scraping & Generating...');
+    });
+  </script>
+</body>
+</html>

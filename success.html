@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title }} – Success</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; background: #0b1220; color: #eaf0ff; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+    .card {
+      background: #121b2f; border: 1px solid #223055; border-radius: 16px;
+      padding: 28px 24px; box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    }
+    h1 { margin: 0 0 10px; font-size: 1.5rem; }
+    .check { font-size: 2.5rem; margin-bottom: 10px; }
+    .info { color: #b8c5e6; line-height: 1.6; font-size: .95rem; }
+    .info strong { color: #eaf0ff; }
+    .badge {
+      display: inline-block; margin-top: 10px; padding: 6px 14px;
+      border-radius: 20px; font-size: .82rem; font-weight: 600;
+    }
+    .badge.ok { background: #0e3a1a; color: #4ade80; border: 1px solid #166534; }
+    .badge.warn { background: #3a2e0e; color: #fbbf24; border: 1px solid #854d0e; }
+    a.btn {
+      display: inline-block; margin-top: 22px; padding: 12px 24px;
+      border-radius: 12px; background: #2c7dff; color: white;
+      text-decoration: none; font-weight: 700; font-size: .95rem;
+    }
+    a.btn:hover { filter: brightness(1.08); }
+    .footer { text-align: center; margin-top: 28px; color: #5a6a8a; font-size: .8rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="check">✅</div>
+      <h1>Submission Received!</h1>
+      <div class="info">
+        <p><strong>{{ form.company }}</strong> has been onboarded successfully.</p>
+        <p>
+          Context file <strong>{{ short_name }}.txt</strong> has been generated and pushed to GitHub
+          (<code>Context/{{ short_name }}.txt</code>).
+        </p>
+        <p>Your submission has been recorded in <code>submissions.csv</code>.</p>
+
+        {% if email_sent %}
+          <span class="badge ok">📧 Email sent to {{ form.email }} for review</span>
+        {% else %}
+          <span class="badge warn">⚠️ Email not sent (SMTP not configured)</span>
+          <br/><small style="color:#b8c5e6;">Set SMTP_USER / SMTP_PASS env vars on Render to enable.</small>
+        {% endif %}
+      </div>
+
+      <a class="btn" href="/">← Submit Another</a>
+    </div>
+    <div class="footer">Powered by LiveAvatar · Agentic Process Automation</div>
+  </div>
+</body>
+</html>
