@@ -39,10 +39,23 @@
       <div class="info">
         <p><strong>{{ form.company }}</strong> has been onboarded successfully.</p>
         <p>
-          Context file <strong>{{ short_name }}.txt</strong> has been generated and pushed to GitHub
-          (<code>Context/{{ short_name }}.txt</code>).
+          Context file <strong>{{ short_name }}.txt</strong> has been generated
+          {% if github_ok %}
+          and pushed to GitHub (<code>Context/{{ short_name }}.txt</code>).
+          {% else %}
+          but <strong>GitHub push failed</strong> — check GITHUB_TOKEN env var.
+          {% endif %}
         </p>
+
+        {% if github_ok %}
         <p>Your submission has been recorded in <code>submissions.csv</code>.</p>
+        {% endif %}
+
+        {% if github_ok %}
+          <span class="badge ok">✅ GitHub: pushed successfully</span><br/><br/>
+        {% else %}
+          <span class="badge warn">⚠️ GitHub: push failed (check GITHUB_TOKEN)</span><br/><br/>
+        {% endif %}
 
         {% if email_sent %}
           <span class="badge ok">📧 Email sent to {{ form.email }} for review</span>

@@ -29,6 +29,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "Krish1959/bbb-web")  # owner/repo
 GITHUB_BRANCH = os.environ.get("GITHUB_BRANCH", "main")
+GITHUB_DATA_BRANCH = os.environ.get("GITHUB_DATA_BRANCH", "data")  # separate branch for data files
 
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
@@ -376,20 +377,56 @@ def generate_heygen_context(form_data: dict, scraped: dict) -> str:
 
 # ── GitHub Operations ─────────────────────────────────────────────────
 
-def github_api(method: str, path: str, json_data: dict = None):
+def github_api(method: str, path: str, json_data: dict = None, params: dict = None):
     """Generic GitHub API call."""
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{path}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json",
     }
-    resp = requests.request(method, url, headers=headers, json=json_data, timeout=20)
+    resp = requests.request(method, url, headers=headers, json=json_data, params=params, timeout=20)
     return resp
 
 
-def github_get_file(path: str):
+def ensure_data_branch():
+    """Create the data branch from main if it doesn't exist."""
+    api_url = f"https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/{GITHUB_DATA_BRANCH}"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    resp = requests.get(api_url, headers=headers, timeout=15)
+    if resp.status_code == 200:
+        return True  # branch exists
+
+    # Get main branch SHA
+    main_url = f"https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/{GITHUB_BRANCH}"
+    main_resp = requests.get(main_url, headers=headers, timeout=15)
+    if main_resp.status_code != 200:
+        log.error(f"Cannot find main branch: {main_resp.status_code}")
+        return False
+
+    main_sha = main_resp.json()["object"]["sha"]
+
+    # Create data branch
+    create_url = f"https://api.github.com/repos/{GITHUB_REPO}/git/refs"
+    create_resp = requests.post(create_url, headers=headers, json={
+        "ref": f"refs/heads/{GITHUB_DATA_BRANCH}",
+        "sha": main_sha,
+    }, timeout=15)
+
+    if create_resp.status_code in (200, 201):
+        log.info(f"✅ Created '{GITHUB_DATA_BRANCH}' branch")
+        return True
+    else:
+        log.error(f"❌ Failed to create data branch: {create_resp.status_code} {create_resp.text}")
+        return False
+
+
+def github_get_file(path: str, branch: str = None):
     """Get file content + SHA from GitHub."""
-    resp = github_api("GET", path)
+    branch = branch or GITHUB_DATA_BRANCH
+    resp = github_api("GET", path, params={"ref": branch})
     if resp.status_code == 200:
         data = resp.json()
         content = base64.b64decode(data["content"]).decode("utf-8")
@@ -397,22 +434,23 @@ def github_get_file(path: str):
     return None, None
 
 
-def github_put_file(path: str, content: str, message: str):
+def github_put_file(path: str, content: str, message: str, branch: str = None):
     """Create or update a file on GitHub."""
+    branch = branch or GITHUB_DATA_BRANCH
     encoded = base64.b64encode(content.encode("utf-8")).decode("utf-8")
-    existing_content, sha = github_get_file(path)
+    existing_content, sha = github_get_file(path, branch=branch)
 
     payload = {
         "message": message,
         "content": encoded,
-        "branch": GITHUB_BRANCH,
+        "branch": branch,
     }
     if sha:
         payload["sha"] = sha
 
     resp = github_api("PUT", path, json_data=payload)
     if resp.status_code in (200, 201):
-        log.info(f"✅ GitHub: {path} pushed successfully.")
+        log.info(f"✅ GitHub: {path} pushed to '{branch}' branch.")
         return True
     else:
         log.error(f"❌ GitHub push failed for {path}: {resp.status_code} {resp.text}")
@@ -565,13 +603,18 @@ def submit():
 
     # ── Step 1c: Push submissions.csv to GitHub ──
     csv_ok = False
+    ctx_ok = False
+    try:
+        ensure_data_branch()
+    except Exception as exc:
+        log.error(f"Branch setup failed: {exc}")
+
     try:
         csv_ok = append_to_csv_on_github(form_data)
     except Exception as exc:
         log.error(f"CSV push failed: {exc}")
 
     # ── Step 1d: Push context file to GitHub ──
-    ctx_ok = False
     try:
         ctx_ok = push_context_to_github(short_name, context_content)
     except Exception as exc:
