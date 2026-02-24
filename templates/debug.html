@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Debug v{{ version }}</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;background:#0b1220;color:#eaf0ff}
+    .wrap{max-width:900px;margin:0 auto;padding:24px 16px 60px}
+    .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:24px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    h1{margin:0 0 4px;font-size:1.4rem}
+    .ver{color:#6aa7ff;font-size:.85rem;margin-bottom:16px;font-weight:600}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .b{padding:5px 14px;border-radius:16px;font-size:.8rem;font-weight:600}
+    .b.ok{background:#0e3a1a;color:#4ade80;border:1px solid #166534}
+    .b.fail{background:#3a1b1b;color:#ff6a6a;border:1px solid #7f1d1d}
+    .b.wait{background:#2a2a0e;color:#fbbf24;border:1px solid #854d0e}
+    h2{font-size:1rem;color:#8fa8d6;margin:16px 0 8px}
+    .dbg{background:#080c18;border:1px solid #1a2540;border-radius:10px;padding:16px;
+         font-family:'Courier New',monospace;font-size:.78rem;line-height:1.6;
+         color:#c0d0f0;white-space:pre-wrap;word-break:break-all;
+         max-height:600px;overflow-y:auto;user-select:all}
+    .back{display:inline-block;margin-top:18px;padding:10px 22px;border-radius:10px;
+          background:#2c7dff;color:#fff;text-decoration:none;font-weight:600;font-size:.9rem}
+    .back:hover{filter:brightness(1.08)}
+    .ft{text-align:center;margin-top:20px;color:#5a6a8a;font-size:.75rem}
+    .copy-btn{margin-top:8px;padding:6px 16px;border-radius:8px;border:1px solid #2b3a64;
+              background:#0c1427;color:#8fa8d6;font-size:.78rem;cursor:pointer}
+    .copy-btn:hover{background:#1a2540}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Debug Output</h1>
+    <div class="ver">Version {{ version }}</div>
+
+    {% if submitted %}
+    <div class="badges">
+      {% if csv_ok %}<span class="b ok">CSV: OK</span>{% else %}<span class="b fail">CSV: FAIL</span>{% endif %}
+      {% if ctx_ok %}<span class="b ok">Context: OK</span>{% else %}<span class="b fail">Context: FAIL</span>{% endif %}
+      {% if email_ok %}<span class="b ok">Email: Sent</span>{% else %}<span class="b fail">Email: Fail</span>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if errors %}
+    <div class="badges">
+      {% for e in errors %}<span class="b fail">{{ e }}</span>{% endfor %}
+    </div>
+    {% endif %}
+
+    <h2>Log</h2>
+    <div class="dbg" id="log">{{ debug_log }}</div>
+    <button class="copy-btn" onclick="copyLog()">Copy Log to Clipboard</button>
+
+    <br/>
+    <a class="back" href="/">&#8592; Back to Form</a>
+  </div>
+  <div class="ft">LiveAvatar &middot; v{{ version }}</div>
+</div>
+<script>
+function copyLog(){
+  var t=document.getElementById('log').innerText;
+  navigator.clipboard.writeText(t).then(function(){
+    document.querySelector('.copy-btn').textContent='Copied!';
+    setTimeout(function(){document.querySelector('.copy-btn').textContent='Copy Log to Clipboard'},2000);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,16 +1,12 @@
 """
 BBB-Web: Agentic Process Automation
-Version: 5.0
-------------------------------------
-Step 1: Form > Scrape > Generate HeyGen Context > Push to GitHub > Email for Vetting
-Debug mode: all output shown on the form page inline.
+Version: 5.1
 """
 
 import os
 import re
 import csv
 import io
-import json
 import base64
 import smtplib
 import logging
@@ -24,10 +20,10 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
 
-VERSION = "5.0"
+VERSION = "5.1"
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
+app.secret_key = os.environ.get("SECRET_KEY", "bbb-web-secret")
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "Krish1959/bbb-web")
@@ -48,28 +44,28 @@ log = logging.getLogger(__name__)
 
 class DebugLog:
     def __init__(self):
-        self.messages = []
+        self.entries = []
 
-    def info(self, msg):
+    def add(self, level, msg):
         ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
-        entry = f"[{ts}] OK: {msg}"
-        self.messages.append(entry)
-        log.info(msg)
+        self.entries.append({"ts": ts, "level": level, "msg": msg})
+        getattr(log, level, log.info)(msg)
+
+    def ok(self, msg):
+        self.add("info", msg)
 
     def warn(self, msg):
-        ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
-        entry = f"[{ts}] WARN: {msg}"
-        self.messages.append(entry)
-        log.warning(msg)
+        self.add("warning", msg)
 
-    def error(self, msg):
-        ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
-        entry = f"[{ts}] ERROR: {msg}"
-        self.messages.append(entry)
-        log.error(msg)
+    def err(self, msg):
+        self.add("error", msg)
 
     def text(self):
-        return "\n".join(self.messages)
+        lines = []
+        for e in self.entries:
+            tag = {"info": "OK", "warning": "WARN", "error": "ERROR"}.get(e["level"], "?")
+            lines.append(f"[{e['ts']}] {tag}: {e['msg']}")
+        return "\n".join(lines)
 
 
 def normalize_url(raw):
@@ -88,26 +84,17 @@ def extract_short_name(url):
 
 def scrape_website(url, dbg):
     url = normalize_url(url)
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        )
-    }
-    result = {
-        "url": url, "title": "", "description": "",
-        "text_blocks": [], "internal_links": [], "social_links": [],
-        "emails_found": [], "phones_found": [], "error": None,
-    }
+    hdrs = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0"}
+    result = {"url": url, "title": "", "description": "", "text_blocks": [],
+              "internal_links": [], "social_links": [], "emails_found": [], "error": None}
     try:
-        dbg.info(f"Fetching {url} ...")
-        resp = requests.get(url, headers=headers, timeout=15, allow_redirects=True)
+        dbg.ok(f"Fetching {url}")
+        resp = requests.get(url, headers=hdrs, timeout=15, allow_redirects=True)
         resp.raise_for_status()
-        dbg.info(f"Got HTTP {resp.status_code}, length={len(resp.text)}")
+        dbg.ok(f"HTTP {resp.status_code}, {len(resp.text)} bytes")
     except Exception as exc:
         result["error"] = str(exc)
-        dbg.error(f"Scrape failed: {exc}")
+        dbg.err(f"Fetch failed: {exc}")
         return result
 
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -116,7 +103,7 @@ def scrape_website(url, dbg):
 
     if soup.title:
         result["title"] = soup.title.get_text(strip=True)
-        dbg.info(f"Title: {result['title']}")
+        dbg.ok(f"Title: {result['title']}")
 
     meta = soup.find("meta", attrs={"name": "description"})
     if meta and meta.get("content"):
@@ -130,408 +117,309 @@ def scrape_website(url, dbg):
         txt = tag.get_text(strip=True)
         if len(txt) > 20:
             result["text_blocks"].append(txt)
-
-    dbg.info(f"Extracted {len(result['text_blocks'])} text blocks")
+    dbg.ok(f"{len(result['text_blocks'])} text blocks extracted")
 
     seen = set()
-    social_domains = ["facebook.com", "twitter.com", "x.com", "linkedin.com",
-                      "instagram.com", "youtube.com", "tiktok.com", "github.com"]
+    socials = ["facebook.com", "twitter.com", "x.com", "linkedin.com",
+               "instagram.com", "youtube.com", "tiktok.com", "github.com"]
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
         full = urljoin(url, href)
-        full_parsed = urlparse(full)
-        if full_parsed.scheme not in ("http", "https"):
+        fp = urlparse(full)
+        if fp.scheme not in ("http", "https"):
             if href.startswith("mailto:"):
-                email_addr = href.replace("mailto:", "").split("?")[0]
-                if email_addr not in result["emails_found"]:
-                    result["emails_found"].append(email_addr)
+                em = href.replace("mailto:", "").split("?")[0]
+                if em not in result["emails_found"]:
+                    result["emails_found"].append(em)
             continue
         if full in seen:
             continue
         seen.add(full)
-        host = (full_parsed.hostname or "").lower()
-        if any(sd in host for sd in social_domains):
+        host = (fp.hostname or "").lower()
+        if any(s in host for s in socials):
             result["social_links"].append(full)
-            continue
-        if base_domain.replace("www.", "") in host.replace("www.", ""):
-            path = full_parsed.path.lower()
-            if any(path.endswith(ext) for ext in [".jpg", ".png", ".pdf", ".svg", ".gif", ".zip"]):
-                continue
-            result["internal_links"].append(full)
+        elif base_domain.replace("www.", "") in host.replace("www.", ""):
+            if not any(fp.path.lower().endswith(e) for e in [".jpg", ".png", ".pdf", ".svg", ".gif", ".zip"]):
+                result["internal_links"].append(full)
+    dbg.ok(f"{len(result['internal_links'])} internal links, {len(result['social_links'])} social")
 
-    dbg.info(f"Found {len(result['internal_links'])} internal links, {len(result['social_links'])} social")
-
-    priority_keywords = ["about", "service", "product", "contact", "team", "solution"]
-    sub_pages = []
-    for link in result["internal_links"]:
-        lpath = urlparse(link).path.lower()
-        if any(kw in lpath for kw in priority_keywords):
-            sub_pages.append(link)
-        if len(sub_pages) >= 5:
-            break
-
-    for sub_url in sub_pages:
+    kw = ["about", "service", "product", "contact", "team", "solution"]
+    subs = [l for l in result["internal_links"] if any(k in urlparse(l).path.lower() for k in kw)][:5]
+    for su in subs:
         try:
-            r2 = requests.get(sub_url, headers=headers, timeout=10)
+            r2 = requests.get(su, headers=hdrs, timeout=10)
             if r2.ok:
                 s2 = BeautifulSoup(r2.text, "html.parser")
                 for tag in s2.find_all(["h1", "h2", "h3", "p", "li"]):
                     txt = tag.get_text(strip=True)
                     if len(txt) > 20 and txt not in result["text_blocks"]:
                         result["text_blocks"].append(txt)
-                page_text = s2.get_text()
-                found_emails = re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", page_text)
-                for em in found_emails:
+                for em in re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", s2.get_text()):
                     if em not in result["emails_found"]:
                         result["emails_found"].append(em)
-                dbg.info(f"Sub-page OK: {sub_url}")
+                dbg.ok(f"Sub-page OK: {su}")
         except Exception:
-            dbg.warn(f"Sub-page failed: {sub_url}")
-
+            dbg.warn(f"Sub-page fail: {su}")
     return result
 
 
 def generate_heygen_context(form_data, scraped):
-    company = form_data["company"]
-    name = form_data["name"]
-    email = form_data["email"]
-    phone = form_data.get("phone", "")
-    web_url = form_data["web_url"]
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    site_title = scraped.get("title", company)
-    site_desc = scraped.get("description", "")
-    text_blocks = scraped.get("text_blocks", [])
-    internal_links = scraped.get("internal_links", [])
-    social_links = scraped.get("social_links", [])
-    emails_found = scraped.get("emails_found", [])
+    co = form_data["company"]
+    nm = form_data["name"]
+    em = form_data["email"]
+    ph = form_data.get("phone", "")
+    wu = normalize_url(form_data["web_url"])
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    sd = scraped.get("description", "")
+    st = scraped.get("title", co)
+    tb = scraped.get("text_blocks", [])
+    il = scraped.get("internal_links", [])
+    sl = scraped.get("social_links", [])
+    ef = scraped.get("emails_found", [])
 
-    content_summary = ""
-    char_count = 0
-    for block in text_blocks:
-        if char_count + len(block) > 2000:
+    cs = ""
+    cc = 0
+    for b in tb:
+        if cc + len(b) > 2000:
             break
-        content_summary += block + "\n\n"
-        char_count += len(block)
-    if not content_summary.strip():
-        content_summary = f"{company} - information scraped from {normalize_url(web_url)}.\n"
+        cs += b + "\n\n"
+        cc += len(b)
+    if not cs.strip():
+        cs = f"{co} - info from {wu}\n"
 
-    L = []
-    L.append(f"# {company}\n")
-    L.append(f"**Contact Person:** {name}")
-    L.append(f"**Email:** {email}")
-    if phone:
-        L.append(f"**Phone:** {phone}")
-    L.append(f"**Website:** {normalize_url(web_url)}")
-    L.append(f"**Generated:** {timestamp}\n")
-    L.append("---\n")
-    L.append("## Opening Intro\n")
-    L.append(site_desc if site_desc else f"{company} is an organization accessible at {normalize_url(web_url)}.")
-    L.append("\n## Website Content Summary\n")
-    if site_title:
-        L.append(f"**Site Title:** {site_title}\n")
-    L.append(content_summary.strip())
-    L.append("\n## Links - Sub-pages & Associated URLs\n")
-    if internal_links:
-        for link in internal_links[:30]:
-            L.append(f"- {link}")
-    else:
-        L.append("- No sub-pages discovered.")
-    if social_links:
-        L.append("\n## Social Media Links\n")
-        for link in social_links:
-            L.append(f"- {link}")
-    if emails_found:
-        L.append("\n## Contact Emails Found\n")
-        for em in emails_found:
-            L.append(f"- {em}")
-    L.append("\n---\n")
-    L.append("## PERSONA\n")
-    L.append(f"You are a friendly and professional virtual assistant representing **{company}**.")
-    L.append(f"Your role is to greet visitors, answer questions about {company}'s products and services,")
-    L.append("and guide them to the right resources or team members.\n")
-    L.append("You speak in a warm, conversational tone. You are helpful, concise, and knowledgeable")
-    L.append(f"about everything related to {company}.\n")
-    L.append("---\n")
-    L.append("# KNOWLEDGE BASE\n")
-    L.append(f"## About {company}\n")
-    if site_desc:
-        L.append(site_desc)
-    L.append("\n### Key Information from Website\n")
-    L.append(content_summary.strip())
-    if internal_links:
-        L.append("\n### Useful Pages to Reference\n")
-        for link in internal_links[:15]:
-            L.append(f"- {link}")
-    L.append("\n---\n")
-    L.append("# INSTRUCTIONS\n")
-    L.append("Each response must be kept to 50 words maximum.\n")
-    L.append("---\n")
-    L.append("# COMMUNICATION STYLE\n")
-    L.append("[Be concise]: Short, natural, no long monologues.")
-    L.append("[Be conversational]: Sound human.")
-    L.append("[Reply with warmth]: Make visitors comfortable.")
-    L.append("[Be proactive]: Guide visitors to the information they need.")
-    L.append("[Avoid listing]: Never speak in bullet points or numbers.\n")
-    L.append("---\n")
-    L.append("# RESPONSE GUIDELINES\n")
-    L.append("- If audio is unclear, ask politely to repeat.")
-    L.append("- Stay focused on company products, services, and information.")
-    L.append("- Gently guide visitors who go off-topic.")
-    L.append("- Never include stage directions like *smiles* or *nods*.\n")
-    L.append("---\n")
-    L.append("# JAILBREAKING\n")
-    L.append("If visitors ask to play games or go off-topic, politely redirect:")
-    L.append(f'> "I appreciate that! But let me help you with anything about {company} instead."')
-
+    L = [f"# {co}\n", f"**Contact:** {nm}", f"**Email:** {em}"]
+    if ph:
+        L.append(f"**Phone:** {ph}")
+    L += [f"**Website:** {wu}", f"**Generated:** {ts}\n", "---\n", "## Opening Intro\n",
+          sd if sd else f"{co} is accessible at {wu}.",
+          "\n## Website Content Summary\n", f"**Site Title:** {st}\n" if st else "", cs.strip(),
+          "\n## Links - Sub-pages\n"]
+    L += [f"- {l}" for l in il[:30]] if il else ["- No sub-pages found."]
+    if sl:
+        L += ["\n## Social Media\n"] + [f"- {l}" for l in sl]
+    if ef:
+        L += ["\n## Emails Found\n"] + [f"- {e}" for e in ef]
+    L += ["\n---\n", "## PERSONA\n",
+          f"You are a friendly virtual assistant for **{co}**.",
+          f"Answer questions about {co}'s products/services and guide visitors.\n",
+          "---\n", "# KNOWLEDGE BASE\n", f"## About {co}\n", sd if sd else "",
+          "\n### Key Info\n", cs.strip()]
+    if il:
+        L += ["\n### Pages\n"] + [f"- {l}" for l in il[:15]]
+    L += ["\n---\n", "# INSTRUCTIONS\n", "Keep responses under 50 words.\n",
+          "---\n", "# COMMUNICATION STYLE\n",
+          "[Be concise] [Be conversational] [Reply with warmth] [Be proactive] [Avoid listing]\n",
+          "---\n", "# RESPONSE GUIDELINES\n",
+          "- Ask to repeat if unclear.", "- Stay on-topic.", "- No stage directions.\n",
+          "---\n", "# JAILBREAKING\n",
+          f'If off-topic: "Let me help you with {co} instead."']
     return "\n".join(L)
 
 
 def github_api(method, path, json_data=None, params=None):
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{path}"
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-    return requests.request(method, url, headers=headers, json=json_data, params=params, timeout=20)
+    h = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+    return requests.request(method, url, headers=h, json=json_data, params=params, timeout=20)
 
 
 def ensure_data_branch(dbg):
-    api_url = f"https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/{GITHUB_DATA_BRANCH}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-    dbg.info(f"Checking branch '{GITHUB_DATA_BRANCH}'...")
-    resp = requests.get(api_url, headers=headers, timeout=15)
-    if resp.status_code == 200:
-        dbg.info(f"Branch '{GITHUB_DATA_BRANCH}' exists.")
+    h = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+    dbg.ok(f"Checking branch '{GITHUB_DATA_BRANCH}'")
+    r = requests.get(f"https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/{GITHUB_DATA_BRANCH}",
+                     headers=h, timeout=15)
+    if r.status_code == 200:
+        dbg.ok("Branch exists")
         return True
-
-    dbg.info(f"Branch not found (HTTP {resp.status_code}). Creating...")
-    main_url = f"https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/{GITHUB_BRANCH}"
-    main_resp = requests.get(main_url, headers=headers, timeout=15)
-    if main_resp.status_code != 200:
-        dbg.error(f"Cannot find '{GITHUB_BRANCH}': HTTP {main_resp.status_code} - {main_resp.text[:200]}")
+    dbg.ok(f"Branch missing (HTTP {r.status_code}), creating from '{GITHUB_BRANCH}'")
+    mr = requests.get(f"https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/{GITHUB_BRANCH}",
+                      headers=h, timeout=15)
+    if mr.status_code != 200:
+        dbg.err(f"Main branch not found: HTTP {mr.status_code} {mr.text[:200]}")
         return False
-
-    main_sha = main_resp.json()["object"]["sha"]
-    create_url = f"https://api.github.com/repos/{GITHUB_REPO}/git/refs"
-    create_resp = requests.post(create_url, headers=headers, json={
-        "ref": f"refs/heads/{GITHUB_DATA_BRANCH}", "sha": main_sha,
-    }, timeout=15)
-
-    if create_resp.status_code in (200, 201):
-        dbg.info(f"Branch '{GITHUB_DATA_BRANCH}' created.")
+    sha = mr.json()["object"]["sha"]
+    cr = requests.post(f"https://api.github.com/repos/{GITHUB_REPO}/git/refs", headers=h,
+                       json={"ref": f"refs/heads/{GITHUB_DATA_BRANCH}", "sha": sha}, timeout=15)
+    if cr.status_code in (200, 201):
+        dbg.ok("Branch created")
         return True
-    else:
-        dbg.error(f"Branch creation failed: HTTP {create_resp.status_code} - {create_resp.text[:200]}")
-        return False
+    dbg.err(f"Branch create failed: HTTP {cr.status_code} {cr.text[:200]}")
+    return False
 
 
-def github_get_file(path, branch=None):
+def gh_get(path, branch=None):
     branch = branch or GITHUB_DATA_BRANCH
-    resp = github_api("GET", path, params={"ref": branch})
-    if resp.status_code == 200:
-        data = resp.json()
-        content = base64.b64decode(data["content"]).decode("utf-8")
-        return content, data["sha"]
+    r = github_api("GET", path, params={"ref": branch})
+    if r.status_code == 200:
+        d = r.json()
+        return base64.b64decode(d["content"]).decode("utf-8"), d["sha"]
     return None, None
 
 
-def github_put_file(path, content, message, dbg, branch=None):
+def gh_put(path, content, msg, dbg, branch=None):
     branch = branch or GITHUB_DATA_BRANCH
-    encoded = base64.b64encode(content.encode("utf-8")).decode("utf-8")
-    existing_content, sha = github_get_file(path, branch=branch)
-    payload = {"message": message, "content": encoded, "branch": branch}
+    enc = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+    _, sha = gh_get(path, branch)
+    payload = {"message": msg, "content": enc, "branch": branch}
     if sha:
         payload["sha"] = sha
-        dbg.info(f"Updating: {path} (sha={sha[:8]})")
-    else:
-        dbg.info(f"Creating: {path}")
-
-    resp = github_api("PUT", path, json_data=payload)
-    if resp.status_code in (200, 201):
-        dbg.info(f"GitHub OK: {path}")
+    dbg.ok(f"Pushing {path} to '{branch}' {'(update)' if sha else '(new)'}")
+    r = github_api("PUT", path, json_data=payload)
+    if r.status_code in (200, 201):
+        dbg.ok(f"GitHub OK: {path}")
         return True
-    else:
-        dbg.error(f"GitHub FAIL {path}: HTTP {resp.status_code} - {resp.text[:300]}")
-        return False
+    dbg.err(f"GitHub FAIL {path}: HTTP {r.status_code} {r.text[:300]}")
+    return False
 
 
-def append_to_csv_on_github(form_data, dbg):
-    csv_path = "submissions.csv"
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    row = {
-        "timestamp": timestamp, "name": form_data["name"],
-        "company": form_data["company"], "email": form_data["email"],
-        "phone": form_data.get("phone", ""), "web_url": form_data["web_url"],
-    }
-    headers_list = ["timestamp", "name", "company", "email", "phone", "web_url"]
-    existing, sha = github_get_file(csv_path)
+def csv_push(form_data, dbg):
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    row = {"timestamp": ts, "name": form_data["name"], "company": form_data["company"],
+           "email": form_data["email"], "phone": form_data.get("phone", ""), "web_url": form_data["web_url"]}
+    fields = ["timestamp", "name", "company", "email", "phone", "web_url"]
+    existing, _ = gh_get("submissions.csv")
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=fields)
     if existing:
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=headers_list)
-        output.write(existing.rstrip("\n") + "\n")
-        writer.writerow(row)
-        new_content = output.getvalue()
-        dbg.info("Appending to existing CSV")
+        buf.write(existing.rstrip("\n") + "\n")
+        dbg.ok("Appending to CSV")
     else:
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=headers_list)
-        writer.writeheader()
-        writer.writerow(row)
-        new_content = output.getvalue()
-        dbg.info("Creating new CSV")
-    return github_put_file(csv_path, new_content, f"Submission: {form_data['company']} - {timestamp}", dbg)
+        w.writeheader()
+        dbg.ok("Creating new CSV")
+    w.writerow(row)
+    return gh_put("submissions.csv", buf.getvalue(), f"Submission: {form_data['company']} - {ts}", dbg)
 
 
-def push_context_to_github(short_name, context_content, dbg):
-    file_path = f"Context/{short_name}.txt"
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    return github_put_file(file_path, context_content, f"Context: {short_name} - {timestamp}", dbg)
+def ctx_push(short_name, ctx, dbg):
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    return gh_put(f"Context/{short_name}.txt", ctx, f"Context: {short_name} - {ts}", dbg)
 
 
-def send_vetting_email(to_email, company, context_content, dbg):
+def send_email(to, company, ctx, dbg):
     if not SMTP_USER or not SMTP_PASS:
-        dbg.warn("SMTP not configured. Skipping email.")
+        dbg.warn("SMTP not configured, skipping email")
         return False
-
-    dbg.info(f"Sending email to {to_email} via {SMTP_HOST}:{SMTP_PORT}...")
-    subject = f"[LiveAvatar] HeyGen Context - {company} (Please Review)"
-    body_html = f"""<html><body style="font-family:Arial,sans-serif;color:#333;">
-    <h2>Hi,</h2>
-    <p>Thank you for submitting details for <strong>{company}</strong>.</p>
-    <p>Please review the generated context below and reply with corrections.</p>
-    <hr/><pre style="background:#f5f5f5;padding:16px;border-radius:8px;font-size:13px;
-    white-space:pre-wrap;">{context_content}</pre><hr/>
-    <p>If everything looks good, no action needed.</p>
-    <p>Best,<br/><strong>LiveAvatar Onboarding Team</strong></p>
-    </body></html>"""
-
+    dbg.ok(f"Emailing {to} via {SMTP_HOST}:{SMTP_PORT}")
+    subj = f"[LiveAvatar] HeyGen Context - {company}"
+    html = f"""<html><body style="font-family:Arial;color:#333">
+    <h2>Hi,</h2><p>Review the context for <b>{company}</b>:</p><hr/>
+    <pre style="background:#f5f5f5;padding:16px;font-size:13px;white-space:pre-wrap">{ctx}</pre>
+    <hr/><p>Reply with corrections or approve.</p>
+    <p>Best,<br/><b>LiveAvatar Team</b></p></body></html>"""
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
+    msg["Subject"] = subj
     msg["From"] = FROM_EMAIL
-    msg["To"] = to_email
-    msg.attach(MIMEText(body_html, "html"))
-
+    msg["To"] = to
+    msg.attach(MIMEText(html, "html"))
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            dbg.info("SMTP TLS OK. Logging in...")
-            server.login(SMTP_USER, SMTP_PASS)
-            dbg.info("SMTP login OK. Sending...")
-            server.sendmail(FROM_EMAIL, [to_email], msg.as_string())
-        dbg.info(f"Email sent to {to_email}")
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
+            s.ehlo()
+            s.starttls()
+            s.ehlo()
+            dbg.ok("TLS OK, logging in...")
+            s.login(SMTP_USER, SMTP_PASS)
+            dbg.ok("Login OK, sending...")
+            s.sendmail(FROM_EMAIL, [to], msg.as_string())
+        dbg.ok(f"Email sent to {to}")
         return True
     except Exception as exc:
-        dbg.error(f"Email FAILED: {type(exc).__name__}: {exc}")
+        dbg.err(f"Email FAIL: {type(exc).__name__}: {exc}")
         return False
 
-
-# ── ROUTES ────────────────────────────────────────────────────────────
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html", title=APP_TITLE, errors=None, form=None,
-                           debug_log="", version=VERSION, submitted=False)
+    return render_template("index.html", title=APP_TITLE, version=VERSION, errors=None, form=None)
 
 
 @app.route("/submit", methods=["POST"])
 def submit():
     dbg = DebugLog()
-    dbg.info(f"=== BBB-Web v{VERSION} === Submit ===")
+    dbg.ok(f"BBB-Web v{VERSION} - Submit received")
 
-    form_data = {
+    fd = {
         "name": request.form.get("name", "").strip(),
         "company": request.form.get("company", "").strip(),
         "email": request.form.get("email", "").strip(),
         "phone": request.form.get("phone", "").strip(),
         "web_url": request.form.get("web_url", "").strip(),
     }
-    dbg.info(f"Form: {form_data['name']} | {form_data['company']} | {form_data['email']} | {form_data['web_url']}")
+    dbg.ok(f"Form: {fd['name']} | {fd['company']} | {fd['email']} | {fd['web_url']}")
 
-    errors = []
-    if not form_data["name"]:
-        errors.append("Name is required.")
-    if not form_data["company"]:
-        errors.append("Company is required.")
-    if not form_data["email"] or "@" not in form_data["email"]:
-        errors.append("Valid email required.")
-    if not form_data["web_url"]:
-        errors.append("Web URL is required.")
+    errs = []
+    if not fd["name"]: errs.append("Name required")
+    if not fd["company"]: errs.append("Company required")
+    if not fd["email"] or "@" not in fd["email"]: errs.append("Valid email required")
+    if not fd["web_url"]: errs.append("Web URL required")
+    if errs:
+        dbg.err(f"Validation: {errs}")
+        return render_template("debug.html", version=VERSION, debug_log=dbg.text(),
+                               submitted=False, errors=errs)
 
-    if errors:
-        dbg.error(f"Validation: {errors}")
-        return render_template("index.html", title=APP_TITLE, errors=errors, form=form_data,
-                               debug_log=dbg.text(), version=VERSION, submitted=False)
+    dbg.ok(f"GITHUB_TOKEN: {'YES (' + GITHUB_TOKEN[:8] + '...)' if GITHUB_TOKEN else 'NOT SET'}")
+    dbg.ok(f"GITHUB_REPO: {GITHUB_REPO}")
+    dbg.ok(f"SMTP_USER: {'YES' if SMTP_USER else 'NOT SET'}")
 
-    dbg.info(f"GITHUB_TOKEN: {'SET (' + GITHUB_TOKEN[:8] + '...)' if GITHUB_TOKEN else 'NOT SET'}")
-    dbg.info(f"GITHUB_REPO: {GITHUB_REPO}")
-    dbg.info(f"SMTP_USER: {'SET' if SMTP_USER else 'NOT SET'}")
-
-    # Step 1a: Scrape
+    # 1. Scrape
     try:
-        scraped = scrape_website(form_data["web_url"], dbg)
-    except Exception as exc:
-        dbg.error(f"Scrape CRASHED: {traceback.format_exc()}")
-        scraped = {"url": form_data["web_url"], "title": "", "description": "",
-                   "text_blocks": [], "internal_links": [], "social_links": [],
-                   "emails_found": [], "phones_found": [], "error": str(exc)}
+        scraped = scrape_website(fd["web_url"], dbg)
+    except Exception:
+        dbg.err(f"Scrape CRASH:\n{traceback.format_exc()}")
+        scraped = {"url": fd["web_url"], "title": "", "description": "", "text_blocks": [],
+                   "internal_links": [], "social_links": [], "emails_found": [], "error": "crashed"}
 
-    # Step 1b: Generate context
+    # 2. Context
     short_name = "unknown"
-    context_content = ""
+    ctx = ""
     try:
-        context_content = generate_heygen_context(form_data, scraped)
-        short_name = extract_short_name(form_data["web_url"])
-        dbg.info(f"Context generated: '{short_name}' ({len(context_content)} chars)")
-    except Exception as exc:
-        dbg.error(f"Context gen CRASHED: {traceback.format_exc()}")
+        ctx = generate_heygen_context(fd, scraped)
+        short_name = extract_short_name(fd["web_url"])
+        dbg.ok(f"Context: '{short_name}' ({len(ctx)} chars)")
+    except Exception:
+        dbg.err(f"Context CRASH:\n{traceback.format_exc()}")
 
-    # Step 1c: Data branch
+    # 3. Branch
     try:
         ensure_data_branch(dbg)
-    except Exception as exc:
-        dbg.error(f"Branch CRASHED: {traceback.format_exc()}")
+    except Exception:
+        dbg.err(f"Branch CRASH:\n{traceback.format_exc()}")
 
-    # Step 1d: CSV
+    # 4. CSV
     csv_ok = False
     try:
-        csv_ok = append_to_csv_on_github(form_data, dbg)
-    except Exception as exc:
-        dbg.error(f"CSV CRASHED: {traceback.format_exc()}")
+        csv_ok = csv_push(fd, dbg)
+    except Exception:
+        dbg.err(f"CSV CRASH:\n{traceback.format_exc()}")
 
-    # Step 1e: Context push
+    # 5. Context push
     ctx_ok = False
     try:
-        ctx_ok = push_context_to_github(short_name, context_content, dbg)
-    except Exception as exc:
-        dbg.error(f"Context push CRASHED: {traceback.format_exc()}")
+        ctx_ok = ctx_push(short_name, ctx, dbg)
+    except Exception:
+        dbg.err(f"Ctx push CRASH:\n{traceback.format_exc()}")
 
-    # Step 1f: Email
-    email_sent = False
+    # 6. Email
+    email_ok = False
     try:
-        email_sent = send_vetting_email(form_data["email"], form_data["company"], context_content, dbg)
-    except Exception as exc:
-        dbg.error(f"Email CRASHED: {traceback.format_exc()}")
+        email_ok = send_email(fd["email"], fd["company"], ctx, dbg)
+    except Exception:
+        dbg.err(f"Email CRASH:\n{traceback.format_exc()}")
 
-    dbg.info("=== SUMMARY ===")
-    dbg.info(f"Scrape: {'OK' if not scraped.get('error') else 'FAIL'}")
-    dbg.info(f"GitHub CSV: {'OK' if csv_ok else 'FAIL'}")
-    dbg.info(f"GitHub Context: {'OK' if ctx_ok else 'FAIL'}")
-    dbg.info(f"Email: {'OK' if email_sent else 'FAIL'}")
-    dbg.info("=== DONE ===")
+    dbg.ok("=== SUMMARY ===")
+    dbg.ok(f"Scrape: {'OK' if not scraped.get('error') else 'FAIL'}")
+    dbg.ok(f"GitHub CSV: {'OK' if csv_ok else 'FAIL'}")
+    dbg.ok(f"GitHub Context: {'OK' if ctx_ok else 'FAIL'}")
+    dbg.ok(f"Email: {'OK' if email_ok else 'FAIL'}")
+    dbg.ok("=== DONE ===")
 
-    return render_template("index.html", title=APP_TITLE, errors=None, form=form_data,
-                           debug_log=dbg.text(), version=VERSION, submitted=True,
-                           short_name=short_name, csv_ok=csv_ok, ctx_ok=ctx_ok,
-                           email_sent=email_sent)
+    return render_template("debug.html", version=VERSION, debug_log=dbg.text(),
+                           submitted=True, errors=None, csv_ok=csv_ok, ctx_ok=ctx_ok,
+                           email_ok=email_ok, short_name=short_name, form=fd)
 
 
-@app.route("/health", methods=["GET"])
+@app.route("/health")
 def health():
-    return {"status": "ok", "version": VERSION, "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {"status": "ok", "version": VERSION}
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

@@ -1,134 +1,64 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ title }}</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; margin: 0; background: #0b1220; color: #eaf0ff; }
-    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
-    .card {
-      background: #121b2f; border: 1px solid #223055; border-radius: 16px;
-      padding: 28px 24px; box-shadow: 0 10px 24px rgba(0,0,0,.25);
-    }
-    h1 { margin: 0 0 6px; letter-spacing: .4px; font-size: 1.5rem; }
-    .version { color: #5a6a8a; font-size: .75rem; margin-bottom: 12px; }
-    .sub { color: #b8c5e6; margin: 0 0 18px; line-height: 1.5; font-size: .95rem; }
-    label { display: block; margin-top: 14px; font-weight: 600; font-size: .9rem; }
-    input {
-      width: 100%; padding: 11px 12px; border-radius: 10px;
-      border: 1px solid #2b3a64; background: #0c1427; color: #eaf0ff;
-      font-size: .95rem; outline: none; margin-top: 4px;
-    }
-    input:focus { border-color: #6aa7ff; }
-    .btn {
-      margin-top: 20px; width: 100%; padding: 14px 16px; border-radius: 12px;
-      border: 0; background: #2c7dff; color: white; font-weight: 700;
-      font-size: 1rem; cursor: pointer;
-    }
-    .btn:hover { filter: brightness(1.08); }
-    .btn:disabled { opacity: .5; cursor: wait; }
-    .errors {
-      background: #3a1b1b; border: 1px solid #ff6a6a; border-radius: 12px;
-      padding: 14px 16px; margin-bottom: 14px;
-    }
-    .errors strong { color: #ff9a9a; }
-    .errors ul { margin: 8px 0 0; padding-left: 18px; }
-    .errors li { margin: 5px 0; font-size: .9rem; }
-
-    /* Debug box */
-    .debug-section { margin-top: 24px; }
-    .debug-section h3 { margin: 0 0 8px; font-size: 1rem; color: #8fa8d6; }
-    .debug-box {
-      background: #0a0e1a; border: 1px solid #1e2d4d; border-radius: 10px;
-      padding: 14px; font-family: 'Courier New', monospace; font-size: .8rem;
-      line-height: 1.5; color: #c0d0f0; white-space: pre-wrap; word-break: break-all;
-      max-height: 500px; overflow-y: auto;
-    }
-    .debug-box:empty { display: none; }
-
-    /* Status badges */
-    .status-bar { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
-    .badge {
-      display: inline-block; padding: 5px 12px; border-radius: 16px;
-      font-size: .78rem; font-weight: 600;
-    }
-    .badge.ok { background: #0e3a1a; color: #4ade80; border: 1px solid #166534; }
-    .badge.fail { background: #3a1b1b; color: #ff6a6a; border: 1px solid #7f1d1d; }
-
-    .footer { text-align: center; margin-top: 28px; color: #5a6a8a; font-size: .78rem; }
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;background:#0b1220;color:#eaf0ff}
+    .wrap{max-width:860px;margin:0 auto;padding:28px 16px 60px}
+    .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:28px 24px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    h1{margin:0 0 6px;font-size:1.5rem}
+    .ver{color:#5a6a8a;font-size:.75rem;margin-bottom:12px}
+    .sub{color:#b8c5e6;margin:0 0 18px;line-height:1.5;font-size:.95rem}
+    label{display:block;margin-top:14px;font-weight:600;font-size:.9rem}
+    input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #2b3a64;background:#0c1427;color:#eaf0ff;font-size:.95rem;outline:none;margin-top:4px}
+    input:focus{border-color:#6aa7ff}
+    .btn{margin-top:20px;width:100%;padding:14px;border-radius:12px;border:0;background:#2c7dff;color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
+    .btn:hover{filter:brightness(1.08)}
+    .btn:disabled{opacity:.5;cursor:wait}
+    .errors{background:#3a1b1b;border:1px solid #ff6a6a;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+    .errors strong{color:#ff9a9a}
+    .errors ul{margin:8px 0 0;padding-left:18px}
+    .errors li{margin:5px 0;font-size:.9rem}
+    .ft{text-align:center;margin-top:28px;color:#5a6a8a;font-size:.78rem}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>{{ title }}</h1>
-      <div class="version">v{{ version }}</div>
-      <p class="sub">Submit details — we'll scrape the website, generate a HeyGen context file, push to GitHub, and email for review.</p>
+<div class="wrap">
+  <div class="card">
+    <h1>{{ title }}</h1>
+    <div class="ver">v{{ version }}</div>
+    <p class="sub">Submit details — opens a debug page showing every step in real time.</p>
 
-      {% if errors %}
-      <div class="errors">
-        <strong>Please fix:</strong>
-        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
-      </div>
-      {% endif %}
-
-      {% if submitted %}
-      <div class="status-bar">
-        {% if csv_ok %}<span class="badge ok">GitHub CSV: OK</span>
-        {% else %}<span class="badge fail">GitHub CSV: FAIL</span>{% endif %}
-
-        {% if ctx_ok %}<span class="badge ok">GitHub Context: OK</span>
-        {% else %}<span class="badge fail">GitHub Context: FAIL</span>{% endif %}
-
-        {% if email_sent %}<span class="badge ok">Email: Sent</span>
-        {% else %}<span class="badge fail">Email: Not Sent</span>{% endif %}
-      </div>
-      {% endif %}
-
-      <form method="POST" action="/submit" id="f">
-        <label for="name">Name</label>
-        <input id="name" name="name" placeholder="Your name"
-               value="{{ (form.name if form else '') }}" required />
-
-        <label for="company">Company</label>
-        <input id="company" name="company" placeholder="Company / Institution"
-               value="{{ (form.company if form else '') }}" required />
-
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="name@company.com"
-               value="{{ (form.email if form else '') }}" required />
-
-        <label for="phone">Phone (optional)</label>
-        <input id="phone" name="phone" placeholder="+65 9xxxxxxx"
-               value="{{ (form.phone if form else '') }}" />
-
-        <label for="web_url">Web URL</label>
-        <input id="web_url" name="web_url" placeholder="https://example.com"
-               value="{{ (form.web_url if form else '') }}" required />
-
-        <button class="btn" type="submit" id="btn">Submit</button>
-      </form>
-
-      <!-- DEBUG OUTPUT -->
-      {% if debug_log %}
-      <div class="debug-section">
-        <h3>Debug Log (v{{ version }})</h3>
-        <div class="debug-box" id="dbg">{{ debug_log }}</div>
-      </div>
-      {% endif %}
-
+    {% if errors %}
+    <div class="errors"><strong>Fix:</strong>
+      <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
     </div>
-    <div class="footer">Powered by LiveAvatar &middot; Agentic Process Automation &middot; v{{ version }}</div>
-  </div>
+    {% endif %}
 
-  <script>
-    document.getElementById('f').addEventListener('submit', function () {
-      var b = document.getElementById('btn');
-      b.disabled = true;
-      b.textContent = 'Processing... (scraping + pushing)';
-    });
-  </script>
+    <form method="POST" action="/submit" id="f">
+      <label>Name</label>
+      <input name="name" placeholder="Your name" value="{{ (form.name if form else '') }}" required/>
+      <label>Company</label>
+      <input name="company" placeholder="Company / Institution" value="{{ (form.company if form else '') }}" required/>
+      <label>Email</label>
+      <input name="email" type="email" placeholder="name@company.com" value="{{ (form.email if form else '') }}" required/>
+      <label>Phone (optional)</label>
+      <input name="phone" placeholder="+65 9xxxxxxx" value="{{ (form.phone if form else '') }}"/>
+      <label>Web URL</label>
+      <input name="web_url" placeholder="https://example.com" value="{{ (form.web_url if form else '') }}" required/>
+      <button class="btn" type="submit" id="btn">Submit</button>
+    </form>
+  </div>
+  <div class="ft">LiveAvatar &middot; v{{ version }}</div>
+</div>
+<script>
+document.getElementById('f').addEventListener('submit',function(){
+  document.getElementById('btn').disabled=true;
+  document.getElementById('btn').textContent='Processing...';
+});
+</script>
 </body>
 </html>
