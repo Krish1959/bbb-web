@@ -1,6 +1,6 @@
 """
 BBB-Web: Agentic Process Automation
-Version: 5.2
+Version: 5.3
 """
 
 import os
@@ -20,7 +20,7 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
 
-VERSION = "5.2"
+VERSION = "5.3"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "bbb-web-secret")
@@ -36,7 +36,7 @@ SMTP_USER = os.environ.get("SMTP_USER", "")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
 FROM_EMAIL = os.environ.get("FROM_EMAIL", SMTP_USER)
 
-APP_TITLE = os.environ.get("APP_TITLE", "LiveAvatar - Client Onboarding")
+APP_TITLE = os.environ.get("APP_TITLE", "Avatar Chat - Client Onboarding")
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -163,7 +163,7 @@ def scrape_website(url, dbg):
     return result
 
 
-def generate_heygen_context(form_data, scraped):
+def generate_context(form_data, scraped):
     co = form_data["company"]
     nm = form_data["name"]
     em = form_data["email"]
@@ -320,12 +320,12 @@ def send_email(to, company, ctx, dbg):
         dbg.warn("SMTP not configured, skipping email")
         return False
     dbg.ok(f"Emailing {to} via {SMTP_HOST}:{SMTP_PORT}")
-    subj = f"[LiveAvatar] HeyGen Context - {company}"
+    subj = f"[Web Scrapped] Context for Avatar Chat - {company}"
     html = f"""<html><body style="font-family:Arial;color:#333">
-    <h2>Hi,</h2><p>Review the context for <b>{company}</b>:</p><hr/>
+    <h2>Hi,</h2><p>Review the context for your Avatar to be Constructed for <b>{company}</b>:</p><hr/>
     <pre style="background:#f5f5f5;padding:16px;font-size:13px;white-space:pre-wrap">{ctx}</pre>
-    <hr/><p>Reply with corrections or approve.</p>
-    <p>Best,<br/><b>LiveAvatar Team</b></p></body></html>"""
+    <hr/><p>Please review and reply with corrections or approval.</p>
+    <p>Best,<br/><b>Avatar Onboarding Team</b></p></body></html>"""
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subj
     msg["From"] = FROM_EMAIL
@@ -392,7 +392,7 @@ def submit():
     short_name = "unknown"
     ctx = ""
     try:
-        ctx = generate_heygen_context(fd, scraped)
+        ctx = generate_context(fd, scraped)
         short_name = extract_short_name(fd["web_url"])
         dbg.ok(f"Context: '{short_name}' ({len(ctx)} chars)")
     except Exception:
