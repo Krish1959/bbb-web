@@ -1,6 +1,6 @@
 """
 BBB-Web: Agentic Process Automation
-Version: 5.3
+Version: 5.4
 """
 
 import os
@@ -20,7 +20,7 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
 
-VERSION = "5.3"
+VERSION = "5.4"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "bbb-web-secret")
@@ -418,23 +418,61 @@ def submit():
     except Exception:
         dbg.err(f"Ctx push CRASH:\n{traceback.format_exc()}")
 
-    # 6. Email
+    dbg.ok("=== Scrape & GitHub Done ===")
+    dbg.ok(f"Scrape: {'OK' if not scraped.get('error') else 'FAIL'}")
+    dbg.ok(f"GitHub CSV: {'OK' if csv_ok else 'FAIL'}")
+    dbg.ok(f"GitHub Context: {'OK' if ctx_ok else 'FAIL'}")
+    dbg.ok("Redirecting to Review page...")
+
+    # Open review page — user decides to email or go to Stage 2
+    return render_template("review.html", version=VERSION, debug_log=dbg.text(),
+                           ctx=ctx, short_name=short_name, form=fd,
+                           csv_ok=csv_ok, ctx_ok=ctx_ok)
+
+
+@app.route("/send-email", methods=["POST"])
+def send_email_route():
+    """User clicked [Email & End] or ticked email checkbox."""
+    dbg = DebugLog()
+    dbg.ok(f"BBB-Web v{VERSION} - Send Email requested")
+
+    to_email = request.form.get("email", "").strip()
+    company = request.form.get("company", "").strip()
+    ctx = request.form.get("context", "")
+    short_name = request.form.get("short_name", "")
+
+    # Also update the context on GitHub if user edited it
+    if ctx and short_name:
+        try:
+            ensure_data_branch(dbg)
+            ctx_ok = ctx_push(short_name, ctx, dbg)
+        except Exception:
+            dbg.err(f"Context update CRASH:\n{traceback.format_exc()}")
+
     email_ok = False
     try:
-        email_ok = send_email(fd["email"], fd["company"], ctx, dbg)
+        email_ok = send_email(to_email, company, ctx, dbg)
     except Exception:
         dbg.err(f"Email CRASH:\n{traceback.format_exc()}")
 
     dbg.ok("=== SUMMARY ===")
-    dbg.ok(f"Scrape: {'OK' if not scraped.get('error') else 'FAIL'}")
-    dbg.ok(f"GitHub CSV: {'OK' if csv_ok else 'FAIL'}")
-    dbg.ok(f"GitHub Context: {'OK' if ctx_ok else 'FAIL'}")
-    dbg.ok(f"Email: {'OK' if email_ok else 'FAIL'}")
+    dbg.ok(f"Email to {to_email}: {'OK' if email_ok else 'FAIL'}")
     dbg.ok("=== DONE ===")
 
     return render_template("debug.html", version=VERSION, debug_log=dbg.text(),
-                           submitted=True, errors=None, csv_ok=csv_ok, ctx_ok=ctx_ok,
-                           email_ok=email_ok, short_name=short_name, form=fd)
+                           submitted=True, errors=None, csv_ok=True, ctx_ok=True,
+                           email_ok=email_ok, short_name=short_name,
+                           form={"email": to_email, "company": company})
+
+
+@app.route("/post-script", methods=["POST"])
+def post_script():
+    """Placeholder for Stage 2 — will invoke Avatar context push to API."""
+    # For now, just acknowledge
+    short_name = request.form.get("short_name", "")
+    company = request.form.get("company", "")
+    return render_template("post_script.html", version=VERSION,
+                           short_name=short_name, company=company)
 
 
 @app.route("/health")

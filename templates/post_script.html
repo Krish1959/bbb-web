@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Post Script - v{{ version }}</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;background:#0b1220;color:#eaf0ff}
+    .wrap{max-width:860px;margin:0 auto;padding:28px 16px 60px}
+    .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:28px 24px;
+          box-shadow:0 10px 24px rgba(0,0,0,.25);text-align:center}
+    h1{margin:0 0 8px;font-size:1.4rem}
+    .ver{color:#6aa7ff;font-size:.85rem;margin-bottom:20px;font-weight:600}
+    .icon{font-size:3rem;margin-bottom:12px}
+    .msg{color:#b8c5e6;font-size:1rem;line-height:1.6;margin-bottom:20px}
+    .msg strong{color:#eaf0ff}
+    .back{display:inline-block;margin-top:16px;padding:12px 28px;border-radius:12px;
+          background:#2c7dff;color:#fff;text-decoration:none;font-weight:700;font-size:.95rem}
+    .back:hover{filter:brightness(1.08)}
+    .ft{text-align:center;margin-top:20px;color:#5a6a8a;font-size:.75rem}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="icon">🚀</div>
+    <h1>Post Script — Stage 2</h1>
+    <div class="ver">Version {{ version }}</div>
+    <div class="msg">
+      <strong>{{ company }}</strong> ({{ short_name }}) is ready for Stage 2.<br/>
+      Avatar context will be pushed to the API here.
+    </div>
+    <a class="back" href="/">← Back to Form</a>
+  </div>
+  <div class="ft">Avatar Chat &middot; v{{ version }}</div>
+</div>
+
+<script>
+// Stage 2 placeholder popup
+window.addEventListener('load', function() {
+  alert('Stage 2 to be invoked for "{{ company }}" ({{ short_name }}).\n\nThis is a placeholder — API integration coming next.');
+});
+</script>
+</body>
+</html>
