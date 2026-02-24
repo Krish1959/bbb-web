@@ -1,6 +1,6 @@
 """
 BBB-Web: Agentic Process Automation
-Version: 5.1
+Version: 5.2
 """
 
 import os
@@ -20,7 +20,7 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
 
-VERSION = "5.1"
+VERSION = "5.2"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "bbb-web-secret")
@@ -272,21 +272,42 @@ def gh_put(path, content, msg, dbg, branch=None):
 
 
 def csv_push(form_data, dbg):
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    row = {"timestamp": ts, "name": form_data["name"], "company": form_data["company"],
-           "email": form_data["email"], "phone": form_data.get("phone", ""), "web_url": form_data["web_url"]}
-    fields = ["timestamp", "name", "company", "email", "phone", "web_url"]
+    now = datetime.now(timezone.utc)
+    date_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%H:%M:%S UTC")
+
+    fields = ["Sl_No", "Date", "Time", "Name", "Company", "Email", "Phone", "Web_URL"]
     existing, _ = gh_get("submissions.csv")
+
+    # Calculate next Sl_No
+    sl_no = 1
+    if existing:
+        lines = existing.strip().split("\n")
+        sl_no = len(lines)  # header is line 1, so data rows = len-1, next = len
+
+    row = {
+        "Sl_No": sl_no,
+        "Date": date_str,
+        "Time": time_str,
+        "Name": form_data["name"],
+        "Company": form_data["company"],
+        "Email": form_data["email"],
+        "Phone": form_data.get("phone", ""),
+        "Web_URL": form_data["web_url"],
+    }
+
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=fields)
-    if existing:
+    if existing and existing.startswith("Sl_No,"):
         buf.write(existing.rstrip("\n") + "\n")
-        dbg.ok("Appending to CSV")
+        dbg.ok(f"Appending to CSV (Sl_No={sl_no})")
     else:
+        if existing:
+            dbg.warn("Old CSV format detected — resetting with new headers")
         w.writeheader()
-        dbg.ok("Creating new CSV")
+        dbg.ok("Creating new CSV with headers: Sl_No, Date, Time, Name, Company, Email, Phone, Web_URL")
     w.writerow(row)
-    return gh_put("submissions.csv", buf.getvalue(), f"Submission: {form_data['company']} - {ts}", dbg)
+    return gh_put("submissions.csv", buf.getvalue(), f"Submission #{sl_no}: {form_data['company']} - {date_str}", dbg)
 
 
 def ctx_push(short_name, ctx, dbg):
