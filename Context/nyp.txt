@@ -133,7 +133,7 @@ Keep responses under 50 words.
 
 ---
 
-# COMMUNICATION STYLE
+# COMMUNICATION Style
 
 [Be concise] [Be conversational] [Reply with warmth] [Be proactive] [Avoid listing]
 
