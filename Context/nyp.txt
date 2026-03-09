@@ -1,10 +1,10 @@
 # NanyangPoly
 
-**Contact:** Krish
+**Contact:** Unni Krishnan Ambady
 **Email:** unni.bca@gmail.com
 **Phone:** +6597890305
-**Website:** https://www.nyp.edu.sg/
-**Generated:** 2026-03-06 08:27 UTC
+**Website:** https://nyp.edu.sg/
+**Generated:** 2026-03-09 12:30 UTC
 
 ---
 
@@ -32,36 +32,36 @@ AdmissionsAdmission ExercisesAcademic CalendarMedical Requirements
 
 ## Links - Sub-pages
 
-- https://www.nyp.edu.sg/main
-- https://www.nyp.edu.sg/#
-- https://www.nyp.edu.sg/student/study/courses
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/apply
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/entry-requirements
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/curriculum-structure
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/Tuition-fees
-- https://www.nyp.edu.sg/student/study/admissions
-- https://www.nyp.edu.sg/student/study/academic-calendar
-- https://www.nyp.edu.sg/student/study/admissions/medical-requirements
-- https://www.nyp.edu.sg/student/study/scholarships
-- https://www.nyp.edu.sg/student/study/financial-matters/annual-course-fees
-- https://www.nyp.edu.sg/student/study/financial-matters/financial-assistance/bursaries
-- https://www.nyp.edu.sg/student/study/financial-matters
-- https://www.nyp.edu.sg/student/study/financial-matters/schemes
-- https://www.nyp.edu.sg/student/study/financial-matters/payment-modes
-- https://www.nyp.edu.sg/student/study/financial-matters/financial-assistance/financial-assist-notebook-purchases
-- https://www.nyp.edu.sg/student/study/financial-matters/financial-assistance/study-loan-scheme
-- https://www.nyp.edu.sg/student/study/how-you-learn
-- https://www.nyp.edu.sg/student/study/university-pathways
+- https://nyp.edu.sg/main
+- https://nyp.edu.sg/#
+- https://nyp.edu.sg/student/study/courses
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/apply
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/entry-requirements
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/curriculum-structure
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/Tuition-fees
+- https://nyp.edu.sg/student/study/admissions
+- https://nyp.edu.sg/student/study/academic-calendar
+- https://nyp.edu.sg/student/study/admissions/medical-requirements
+- https://nyp.edu.sg/student/study/scholarships
+- https://nyp.edu.sg/student/study/financial-matters/annual-course-fees
+- https://nyp.edu.sg/student/study/financial-matters/financial-assistance/bursaries
+- https://nyp.edu.sg/student/study/financial-matters
+- https://nyp.edu.sg/student/study/financial-matters/schemes
+- https://nyp.edu.sg/student/study/financial-matters/payment-modes
+- https://nyp.edu.sg/student/study/financial-matters/financial-assistance/financial-assist-notebook-purchases
+- https://nyp.edu.sg/student/study/financial-matters/financial-assistance/study-loan-scheme
+- https://nyp.edu.sg/student/study/how-you-learn
+- https://nyp.edu.sg/student/study/university-pathways
 - https://mynypportal.nyp.edu.sg/en/enrolment.html
-- https://www.nyp.edu.sg/student/study/schools/applied-science
-- https://www.nyp.edu.sg/student/study/schools/business-management
-- https://www.nyp.edu.sg/student/study/schools/design-media
-- https://www.nyp.edu.sg/student/study/schools/engineering
-- https://www.nyp.edu.sg/student/study/schools/health-social-sciences
-- https://www.nyp.edu.sg/student/study/schools/information-technology
-- https://www.nyp.edu.sg/student/study/common-programmes
-- https://www.nyp.edu.sg/student/life
+- https://nyp.edu.sg/student/study/schools/applied-science
+- https://nyp.edu.sg/student/study/schools/business-management
+- https://nyp.edu.sg/student/study/schools/design-media
+- https://nyp.edu.sg/student/study/schools/engineering
+- https://nyp.edu.sg/student/study/schools/health-social-sciences
+- https://nyp.edu.sg/student/study/schools/information-technology
+- https://nyp.edu.sg/student/study/common-programmes
+- https://nyp.edu.sg/student/life
 
 ## Social Media
 
@@ -109,21 +109,21 @@ AdmissionsAdmission ExercisesAcademic CalendarMedical Requirements
 
 ### Pages
 
-- https://www.nyp.edu.sg/main
-- https://www.nyp.edu.sg/#
-- https://www.nyp.edu.sg/student/study/courses
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/apply
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/entry-requirements
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/curriculum-structure
-- https://www.nyp.edu.sg/student/study/polytechnic-foundation-programme/Tuition-fees
-- https://www.nyp.edu.sg/student/study/admissions
-- https://www.nyp.edu.sg/student/study/academic-calendar
-- https://www.nyp.edu.sg/student/study/admissions/medical-requirements
-- https://www.nyp.edu.sg/student/study/scholarships
-- https://www.nyp.edu.sg/student/study/financial-matters/annual-course-fees
-- https://www.nyp.edu.sg/student/study/financial-matters/financial-assistance/bursaries
-- https://www.nyp.edu.sg/student/study/financial-matters
+- https://nyp.edu.sg/main
+- https://nyp.edu.sg/#
+- https://nyp.edu.sg/student/study/courses
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/apply
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/entry-requirements
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/curriculum-structure
+- https://nyp.edu.sg/student/study/polytechnic-foundation-programme/Tuition-fees
+- https://nyp.edu.sg/student/study/admissions
+- https://nyp.edu.sg/student/study/academic-calendar
+- https://nyp.edu.sg/student/study/admissions/medical-requirements
+- https://nyp.edu.sg/student/study/scholarships
+- https://nyp.edu.sg/student/study/financial-matters/annual-course-fees
+- https://nyp.edu.sg/student/study/financial-matters/financial-assistance/bursaries
+- https://nyp.edu.sg/student/study/financial-matters
 
 ---
 
