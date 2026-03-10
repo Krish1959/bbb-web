@@ -200,6 +200,8 @@ def scrape_website(url, dbg):
 def generate_context(form_data, scraped):
     co = form_data["company"]; nm = form_data["name"]; em = form_data["email"]
     ph = form_data.get("phone",""); wu = normalize_url(form_data["web_url"])
+    av = form_data.get("avatar_type","type1")
+    av_label = "Type-1" if av == "type1" else "Type-2"
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sd = scraped.get("description",""); st = scraped.get("title", co)
     tb = scraped.get("text_blocks",[]); il = scraped.get("internal_links",[])
@@ -212,7 +214,8 @@ def generate_context(form_data, scraped):
     if not cs.strip():
         cs = f"{co} - info from {wu}\n"
 
-    L = [f"# {co}\n", f"**Contact:** {nm}", f"**Email:** {em}"]
+    L = [f"# {co}", f"# Avatar={av_label}\n",
+         f"**Contact:** {nm}", f"**Email:** {em}"]
     if ph: L.append(f"**Phone:** {ph}")
     L += [f"**Website:** {wu}", f"**Generated:** {ts}\n", "---\n",
           "## Opening Intro\n", sd if sd else f"{co} is accessible at {wu}.",
