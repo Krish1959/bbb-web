@@ -7,22 +7,45 @@
   <style>
     *,*::before,*::after{box-sizing:border-box}
     body{font-family:Arial,sans-serif;margin:0;background:#0b1220;color:#eaf0ff}
-    .wrap{max-width:860px;margin:0 auto;padding:28px 16px 60px}
-    .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:28px 24px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
-    h1{margin:0 0 6px;font-size:1.5rem}
-    .ver{color:#5a6a8a;font-size:.75rem;margin-bottom:12px}
-    .sub{color:#b8c5e6;margin:0 0 18px;line-height:1.5;font-size:.95rem}
-    label{display:block;margin-top:14px;font-weight:600;font-size:.9rem}
-    input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #2b3a64;background:#0c1427;color:#eaf0ff;font-size:.95rem;outline:none;margin-top:4px}
-    input:focus{border-color:#6aa7ff}
-    .btn{margin-top:20px;width:100%;padding:14px;border-radius:12px;border:0;background:#2c7dff;color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
+    .wrap{max-width:860px;margin:0 auto;padding:24px 16px 60px}
+    .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:24px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    h1{margin:0 0 4px;font-size:1.4rem}
+    .ver{color:#5a6a8a;font-size:.73rem;margin-bottom:10px}
+    .sub{color:#b8c5e6;margin:0 0 20px;line-height:1.55;font-size:.88rem}
+    .sub strong{color:#eaf0ff}
+
+    /* Inline label+input rows */
+    .field{display:flex;align-items:center;gap:12px;margin-top:12px}
+    .field label{min-width:110px;font-weight:600;font-size:.88rem;flex-shrink:0}
+    .field input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #2b3a64;
+      background:#0c1427;color:#eaf0ff;font-size:.92rem;outline:none}
+    .field input:focus{border-color:#6aa7ff}
+
+    /* Toggle switch row */
+    .toggle-row{display:flex;align-items:center;justify-content:center;gap:14px;
+      margin:22px 0 6px;padding:14px;background:#0c1427;border:1px solid #1e2d4d;border-radius:12px}
+    .toggle-label{font-size:.88rem;font-weight:600;cursor:pointer;transition:color .2s}
+    .toggle-label.active{color:#6aa7ff}
+    .toggle-label.inactive{color:#5a6a8a}
+    .switch{position:relative;width:52px;height:28px;flex-shrink:0}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+      background:#2c7dff;border-radius:28px;transition:.3s}
+    .slider::before{content:"";position:absolute;height:22px;width:22px;left:3px;bottom:3px;
+      background:#fff;border-radius:50%;transition:.3s}
+    .switch input:checked+.slider{background:#10b981}
+    .switch input:checked+.slider::before{transform:translateX(24px)}
+    .avatar-hint{text-align:center;color:#5a6a8a;font-size:.73rem;margin-top:4px}
+
+    .btn{margin-top:18px;width:100%;padding:14px;border-radius:12px;border:0;
+      background:#2c7dff;color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
     .btn:hover{filter:brightness(1.08)}
     .btn:disabled{opacity:.5;cursor:wait}
-    .errors{background:#3a1b1b;border:1px solid #ff6a6a;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+    .errors{background:#3a1b1b;border:1px solid #ff6a6a;border-radius:12px;padding:14px;margin-bottom:14px}
     .errors strong{color:#ff9a9a}
     .errors ul{margin:8px 0 0;padding-left:18px}
-    .errors li{margin:5px 0;font-size:.9rem}
-    .ft{text-align:center;margin-top:28px;color:#5a6a8a;font-size:.78rem}
+    .errors li{margin:4px 0;font-size:.88rem}
+    .ft{text-align:center;margin-top:24px;color:#5a6a8a;font-size:.73rem}
   </style>
 </head>
 <body>
@@ -30,7 +53,12 @@
   <div class="card">
     <h1>{{ title }}</h1>
     <div class="ver">v{{ version }}</div>
-    <p class="sub">By filling out this form, you will receive an email at the address you provide.<br/>The email will contain the data scraped from the web page for your vetting.<br/>Please review the information and reply to the email.<br/>If you do not receive the email, please check your Junk or Spam folder for a message from <strong>agentic.avatar@gmail.com</strong>.</p>
+    <p class="sub">
+      By filling out this form, you will receive an email at the address you provide.<br/>
+      The email will contain the data scraped from the web page for your vetting.<br/>
+      Please review the information and reply to the email.<br/>
+      If you do not receive the email, please check your Junk or Spam folder for a message from <strong>agentic.avatar@gmail.com</strong>.
+    </p>
 
     {% if errors %}
     <div class="errors"><strong>Fix:</strong>
@@ -39,25 +67,64 @@
     {% endif %}
 
     <form method="POST" action="/submit" id="f">
-      <label>Name</label>
-      <input name="name" placeholder="Your name" value="{{ (form.name if form else '') }}" required/>
-      <label>Company</label>
-      <input name="company" placeholder="Company / Institution" value="{{ (form.company if form else '') }}" required/>
-      <label>Email</label>
-      <input name="email" type="email" placeholder="name@company.com" value="{{ (form.email if form else '') }}" required/>
-      <label>Phone (optional)</label>
-      <input name="phone" placeholder="+65 9xxxxxxx" value="{{ (form.phone if form else '') }}"/>
-      <label>Web URL</label>
-      <input name="web_url" placeholder="https://example.com" value="{{ (form.web_url if form else '') }}" required/>
+      <div class="field">
+        <label>Name</label>
+        <input name="name" placeholder="Your name" value="{{ (form.name if form else '') }}" required/>
+      </div>
+      <div class="field">
+        <label>Company</label>
+        <input name="company" placeholder="Company / Institution (to be web-scraped)" value="{{ (form.company if form else '') }}" required/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input name="email" type="email" placeholder="name@company.com" value="{{ (form.email if form else '') }}" required/>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input name="phone" placeholder="+65 9xxxxxxx (optional)" value="{{ (form.phone if form else '') }}"/>
+      </div>
+      <div class="field">
+        <label>Web URL</label>
+        <input name="web_url" placeholder="https://example.com" value="{{ (form.web_url if form else '') }}" required/>
+      </div>
+
+      <!-- Avatar Type Toggle -->
+      <input type="hidden" name="avatar_type" id="avatar_type" value="type1"/>
+      <div class="toggle-row">
+        <span class="toggle-label active" id="lbl-t1">Type-1</span>
+        <label class="switch">
+          <input type="checkbox" id="avatar-toggle"/>
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label inactive" id="lbl-t2">Type-2</span>
+      </div>
+      <div class="avatar-hint">Avatar: Type-1 (Standard) is selected</div>
+
       <button class="btn" type="submit" id="btn">Submit</button>
     </form>
   </div>
   <div class="ft">Avatar Chat &middot; v{{ version }}</div>
 </div>
 <script>
-document.getElementById('f').addEventListener('submit',function(){
+var tog = document.getElementById('avatar-toggle');
+var hid = document.getElementById('avatar_type');
+var l1 = document.getElementById('lbl-t1');
+var l2 = document.getElementById('lbl-t2');
+var hint = document.querySelector('.avatar-hint');
+
+tog.addEventListener('change', function(){
+  if(this.checked){
+    hid.value='type2'; l1.className='toggle-label inactive'; l2.className='toggle-label active';
+    hint.textContent='Avatar: Type-2 (Advanced) is selected';
+  } else {
+    hid.value='type1'; l1.className='toggle-label active'; l2.className='toggle-label inactive';
+    hint.textContent='Avatar: Type-1 (Standard) is selected';
+  }
+});
+
+document.getElementById('f').addEventListener('submit', function(){
   document.getElementById('btn').disabled=true;
-  document.getElementById('btn').textContent='Processing...';
+  document.getElementById('btn').textContent='Scraping website...';
 });
 </script>
 </body>

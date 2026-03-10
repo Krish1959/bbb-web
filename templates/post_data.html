@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Post Data - v{{ version }}</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;background:#0b1220;color:#eaf0ff}
+    .wrap{max-width:860px;margin:0 auto;padding:24px 16px 60px}
+    .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:24px;
+      box-shadow:0 10px 24px rgba(0,0,0,.25);text-align:center}
+    h1{margin:0 0 4px;font-size:1.35rem}
+    .ver{color:#6aa7ff;font-size:.82rem;margin-bottom:16px;font-weight:600}
+    .icon{font-size:2.8rem;margin-bottom:10px}
+    .msg{color:#b8c5e6;font-size:.95rem;line-height:1.6;margin-bottom:16px}
+    .msg strong{color:#eaf0ff}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+    .b{padding:5px 14px;border-radius:16px;font-size:.78rem;font-weight:600}
+    .b.ok{background:#0e3a1a;color:#4ade80;border:1px solid #166534}
+    .b.fail{background:#3a1b1b;color:#ff6a6a;border:1px solid #7f1d1d}
+    .b.info{background:#0e1f3a;color:#6aa7ff;border:1px solid #1e3a6a}
+    .debug-section{margin-top:18px;text-align:left}
+    .debug-section h3{margin:0 0 6px;font-size:.9rem;color:#5a6a8a}
+    .dbg{background:#080c18;border:1px solid #1a2540;border-radius:10px;padding:12px;
+      font-family:'Courier New',monospace;font-size:.73rem;line-height:1.5;color:#8090b0;
+      white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto}
+    .copy-btn{margin-top:6px;padding:5px 14px;border-radius:8px;border:1px solid #2b3a64;
+      background:#0c1427;color:#8fa8d6;font-size:.73rem;cursor:pointer}
+    .back{display:inline-block;margin-top:16px;padding:10px 24px;border-radius:10px;
+      background:#2c7dff;color:#fff;text-decoration:none;font-weight:600;font-size:.9rem}
+    .back:hover{filter:brightness(1.08)}
+    .ft{text-align:center;margin-top:20px;color:#5a6a8a;font-size:.73rem}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="icon">🚀</div>
+    <h1>Post Data — Stage 2</h1>
+    <div class="ver">v{{ version }}</div>
+
+    <div class="msg">
+      <strong>{{ company }}</strong> ({{ short_name }})
+    </div>
+
+    <div class="badges">
+      <span class="b info">{{ avatar_type|upper }}</span>
+      {% if send_email_flag == '1' %}
+        {% if email_ok %}<span class="b ok">Email: Sent</span>{% else %}<span class="b fail">Email: Fail</span>{% endif %}
+      {% else %}
+        <span class="b info">Email: Skipped</span>
+      {% endif %}
+      {% if post_ok %}<span class="b ok">Post Data: OK</span>{% else %}<span class="b fail">Post Data: Fail</span>{% endif %}
+    </div>
+
+    <a class="back" href="/">← Back to Form</a>
+
+    {% if debug_log %}
+    <div class="debug-section">
+      <h3>Debug Log</h3>
+      <div class="dbg" id="log">{{ debug_log }}</div>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('log').innerText).then(function(){event.target.textContent='Copied!'})">Copy Log</button>
+    </div>
+    {% endif %}
+  </div>
+  <div class="ft">Avatar Chat &middot; v{{ version }}</div>
+</div>
+<script>
+window.addEventListener('load', function(){
+  var t = '{{ avatar_type }}' === 'type2' ? 'Post_Advanced (Type-2)' : 'Post_Original (Type-1)';
+  alert('Stage-2 invoked: ' + t + ' for "{{ company }}".\n\n[PLACEHOLDER] — API integration coming next.\n\nClick OK to continue.');
+});
+</script>
+</body>
+</html>

@@ -3,116 +3,104 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Review Scraped Data - v{{ version }}</title>
+  <title>Review - v{{ version }}</title>
   <style>
     *,*::before,*::after{box-sizing:border-box}
     body{font-family:Arial,sans-serif;margin:0;background:#0b1220;color:#eaf0ff}
     .wrap{max-width:920px;margin:0 auto;padding:24px 16px 60px}
     .card{background:#121b2f;border:1px solid #223055;border-radius:16px;padding:24px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
-    h1{margin:0 0 4px;font-size:1.4rem}
-    .ver{color:#6aa7ff;font-size:.85rem;margin-bottom:12px;font-weight:600}
-    .info{color:#b8c5e6;font-size:.9rem;line-height:1.5;margin-bottom:16px}
+    h1{margin:0 0 4px;font-size:1.35rem}
+    .ver{color:#6aa7ff;font-size:.82rem;margin-bottom:14px;font-weight:600}
+    .info{color:#b8c5e6;font-size:.88rem;line-height:1.5;margin-bottom:14px}
     .info strong{color:#eaf0ff}
-
-    /* Status badges */
-    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-    .b{padding:5px 14px;border-radius:16px;font-size:.8rem;font-weight:600}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .b{padding:5px 14px;border-radius:16px;font-size:.78rem;font-weight:600}
     .b.ok{background:#0e3a1a;color:#4ade80;border:1px solid #166534}
     .b.fail{background:#3a1b1b;color:#ff6a6a;border:1px solid #7f1d1d}
-
-    /* Context edit area */
-    label.section{display:block;font-weight:700;font-size:.95rem;margin:16px 0 6px;color:#8fa8d6}
-    textarea{
-      width:100%;min-height:400px;padding:14px;border-radius:10px;
-      border:1px solid #1e2d4d;background:#080c18;color:#c0d0f0;
-      font-family:'Courier New',monospace;font-size:.8rem;line-height:1.5;
-      resize:vertical;outline:none;
-    }
+    .b.warn{background:#3a2e0e;color:#fbbf24;border:1px solid #854d0e}
+    label.sec{display:block;font-weight:700;font-size:.92rem;margin:14px 0 6px;color:#8fa8d6}
+    textarea{width:100%;min-height:380px;padding:14px;border-radius:10px;border:1px solid #1e2d4d;
+      background:#080c18;color:#c0d0f0;font-family:'Courier New',monospace;font-size:.78rem;
+      line-height:1.5;resize:vertical;outline:none}
     textarea:focus{border-color:#6aa7ff}
-
-    /* Checkbox */
-    .check-row{display:flex;align-items:center;gap:10px;margin:18px 0 8px}
+    .check-row{display:flex;align-items:center;gap:10px;margin:16px 0 8px}
     .check-row input[type=checkbox]{width:20px;height:20px;accent-color:#2c7dff;cursor:pointer}
-    .check-row label{font-size:.92rem;cursor:pointer;color:#b8c5e6}
-
-    /* Buttons */
-    .btn-row{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
-    .btn{
-      flex:1;min-width:180px;padding:14px 20px;border-radius:12px;border:0;
-      font-weight:700;font-size:.95rem;cursor:pointer;text-align:center;
-    }
+    .check-row label{font-size:.9rem;cursor:pointer;color:#b8c5e6}
+    .check-row label strong{color:#eaf0ff}
+    .btn-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+    .btn{flex:1;min-width:170px;padding:14px 16px;border-radius:12px;border:0;
+      font-weight:700;font-size:.92rem;cursor:pointer;text-align:center}
     .btn-email{background:#2c7dff;color:#fff}
     .btn-email:hover{filter:brightness(1.08)}
     .btn-post{background:#10b981;color:#fff}
     .btn-post:hover{filter:brightness(1.08)}
     .btn:disabled{opacity:.5;cursor:wait}
-
-    /* Debug section */
-    .debug-section{margin-top:24px}
-    .debug-section h3{margin:0 0 8px;font-size:.95rem;color:#5a6a8a}
-    .dbg{
-      background:#080c18;border:1px solid #1a2540;border-radius:10px;padding:14px;
-      font-family:'Courier New',monospace;font-size:.75rem;line-height:1.5;
-      color:#8090b0;white-space:pre-wrap;word-break:break-all;
-      max-height:200px;overflow-y:auto;
-    }
-
-    .back{display:inline-block;margin-top:16px;color:#6aa7ff;text-decoration:none;font-size:.9rem}
+    .back{display:inline-block;margin-top:14px;color:#6aa7ff;text-decoration:none;font-size:.88rem}
     .back:hover{text-decoration:underline}
-    .ft{text-align:center;margin-top:20px;color:#5a6a8a;font-size:.75rem}
+    .debug-section{margin-top:20px}
+    .debug-section h3{margin:0 0 6px;font-size:.9rem;color:#5a6a8a}
+    .dbg{background:#080c18;border:1px solid #1a2540;border-radius:10px;padding:12px;
+      font-family:'Courier New',monospace;font-size:.73rem;line-height:1.5;color:#8090b0;
+      white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto}
+    .copy-btn{margin-top:6px;padding:5px 14px;border-radius:8px;border:1px solid #2b3a64;
+      background:#0c1427;color:#8fa8d6;font-size:.73rem;cursor:pointer}
+    .copy-btn:hover{background:#1a2540}
+    .ft{text-align:center;margin-top:20px;color:#5a6a8a;font-size:.73rem}
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
     <h1>Review Scraped Data</h1>
-    <div class="ver">Version {{ version }}</div>
+    <div class="ver">v{{ version }} &middot; Avatar: {{ form.avatar_type|upper }}</div>
 
     <div class="info">
-      <strong>{{ form.company }}</strong> — Context file <strong>{{ short_name }}.txt</strong> generated.
-      <br/>Review and edit the content below before sending.
+      <strong>{{ form.company }}</strong> &mdash; Context file <strong>{{ short_name }}.txt</strong>
     </div>
 
     <div class="badges">
       {% if csv_ok %}<span class="b ok">CSV: OK</span>{% else %}<span class="b fail">CSV: FAIL</span>{% endif %}
       {% if ctx_ok %}<span class="b ok">Context: OK</span>{% else %}<span class="b fail">Context: FAIL</span>{% endif %}
+      {% if is_protected %}<span class="b warn">Protected: {{ prot_reason }}</span>
+      {% else %}<span class="b ok">Not Protected</span>{% endif %}
     </div>
 
-    <label class="section">Scraped Context (editable)</label>
-    <textarea id="ctx-edit" name="context">{{ ctx }}</textarea>
+    <label class="sec">Scraped Context (editable)</label>
+    <textarea id="ctx-edit">{{ ctx }}</textarea>
 
     <div class="check-row">
       <input type="checkbox" id="email-check" checked/>
-      <label for="email-check">Email the data to <strong>{{ form.email }}</strong> for vetting</label>
+      <label for="email-check">Email data to <strong>{{ form.email }}</strong> for vetting</label>
     </div>
 
     <div class="btn-row">
-      <!-- Email & End button -->
-      <form method="POST" action="/send-email" id="email-form" style="flex:1;min-width:180px">
+      <!-- Email & End -->
+      <form method="POST" action="/send-email" id="email-form" style="flex:1;min-width:170px">
         <input type="hidden" name="email" value="{{ form.email }}"/>
         <input type="hidden" name="company" value="{{ form.company }}"/>
         <input type="hidden" name="short_name" value="{{ short_name }}"/>
-        <input type="hidden" name="context" id="ctx-email" value=""/>
-        <button type="submit" class="btn btn-email" id="btn-email">📧 Email &amp; End</button>
+        <input type="hidden" name="context" id="ctx-em" value=""/>
+        <button type="submit" class="btn btn-email" id="btn-em">📧 Email &amp; End</button>
       </form>
-
-      <!-- Post Script (Stage 2) button -->
-      <form method="POST" action="/post-script" id="ps-form" style="flex:1;min-width:180px">
+      <!-- Post Data -->
+      <form method="POST" action="/post-data" id="pd-form" style="flex:1;min-width:170px">
         <input type="hidden" name="email" value="{{ form.email }}"/>
         <input type="hidden" name="company" value="{{ form.company }}"/>
         <input type="hidden" name="short_name" value="{{ short_name }}"/>
-        <input type="hidden" name="context" id="ctx-ps" value=""/>
-        <button type="submit" class="btn btn-post" id="btn-ps">🚀 Post Script</button>
+        <input type="hidden" name="context" id="ctx-pd" value=""/>
+        <input type="hidden" name="avatar_type" value="{{ form.avatar_type }}"/>
+        <input type="hidden" name="send_email" id="send-email-flag" value="1"/>
+        <button type="submit" class="btn btn-post" id="btn-pd">🚀 Post Data</button>
       </form>
     </div>
 
     <a class="back" href="/">← Back to Form</a>
 
-    <!-- Debug log from scrape/GitHub steps -->
     {% if debug_log %}
     <div class="debug-section">
       <h3>Debug Log</h3>
-      <div class="dbg">{{ debug_log }}</div>
+      <div class="dbg" id="log">{{ debug_log }}</div>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('log').innerText).then(function(){event.target.textContent='Copied!'})">Copy Log</button>
     </div>
     {% endif %}
   </div>
@@ -120,58 +108,36 @@
 </div>
 
 <script>
-// Sync textarea content to hidden fields before submit
-function syncContext() {
-  var ctx = document.getElementById('ctx-edit').value;
-  document.getElementById('ctx-email').value = ctx;
-  document.getElementById('ctx-ps').value = ctx;
+{% if is_protected %}
+alert("⚠️ Website is not fully scrapable.\n\nReason: {{ prot_reason }}\n\nThe scraped data may be incomplete. Please review carefully.");
+{% endif %}
+
+function syncCtx(){
+  var c=document.getElementById('ctx-edit').value;
+  document.getElementById('ctx-em').value=c;
+  document.getElementById('ctx-pd').value=c;
 }
 
-// Email & End: check if email checkbox is ticked
-document.getElementById('email-form').addEventListener('submit', function(e) {
-  var checked = document.getElementById('email-check').checked;
-  if (!checked) {
-    e.preventDefault();
-    alert('Please tick the email checkbox to send, or use Post Script instead.');
-    return;
-  }
-  syncContext();
-  document.getElementById('btn-email').disabled = true;
-  document.getElementById('btn-email').textContent = 'Sending...';
+// Sync email checkbox to hidden field
+document.getElementById('email-check').addEventListener('change',function(){
+  document.getElementById('send-email-flag').value=this.checked?'1':'0';
 });
 
-// Post Script: sync context, optionally email first if checkbox is ticked
-document.getElementById('ps-form').addEventListener('submit', function(e) {
-  var checked = document.getElementById('email-check').checked;
-  if (checked) {
-    // Send email via fetch in background, then proceed to post-script
-    e.preventDefault();
-    syncContext();
-    var ctx = document.getElementById('ctx-edit').value;
-    document.getElementById('btn-ps').disabled = true;
-    document.getElementById('btn-ps').textContent = 'Sending email + loading...';
-
-    // Send email in background
-    var fd = new FormData();
-    fd.append('email', '{{ form.email }}');
-    fd.append('company', '{{ form.company }}');
-    fd.append('short_name', '{{ short_name }}');
-    fd.append('context', ctx);
-
-    fetch('/send-email', {method: 'POST', body: fd}).then(function() {
-      // Now submit the post-script form
-      document.getElementById('ctx-ps').value = ctx;
-      document.getElementById('ps-form').submit();
-    }).catch(function() {
-      // Email failed but still go to post-script
-      document.getElementById('ctx-ps').value = ctx;
-      document.getElementById('ps-form').submit();
-    });
-  } else {
-    syncContext();
-    document.getElementById('btn-ps').disabled = true;
-    document.getElementById('btn-ps').textContent = 'Loading...';
+// Email & End
+document.getElementById('email-form').addEventListener('submit',function(e){
+  if(!document.getElementById('email-check').checked){
+    e.preventDefault(); alert('Please tick the email checkbox to send.'); return;
   }
+  syncCtx();
+  document.getElementById('btn-em').disabled=true;
+  document.getElementById('btn-em').textContent='Sending...';
+});
+
+// Post Data
+document.getElementById('pd-form').addEventListener('submit',function(){
+  syncCtx();
+  document.getElementById('btn-pd').disabled=true;
+  document.getElementById('btn-pd').textContent='Processing...';
 });
 </script>
 </body>
