@@ -1,5 +1,6 @@
-Timestamp,Company,ShortName,Email,ContextName,Status
+Timestamp,Company,ShortName,Email,ContextName,AvatarType,WebScrap,Status
 2026-03-05 02:48:39 UTC,"PSB Academy","psb-academy","unni.bca@gmail.com","PSB-ACADEMY?","exception"
 2026-03-06 08:36:11 UTC,"NanyangPoly","nyp","unni.bca@gmail.com","NYP1","created"
 2026-03-09 12:47:04 UTC,"NanyangPoly","nyp","unni.bca@gmail.com","NYP2","created"
 2026-03-10 16:38:03 UTC,"NYYP","nyp","agentic.avai@gmail.com","NYPTEST1","Type-2","Success","created"
+2026-03-11 10:30:20 UTC,"NYYP","nyp","agentic.avai@gmail.com","NYPTEST1","Type-1","Success","created"
