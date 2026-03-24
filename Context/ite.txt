@@ -1,10 +1,12 @@
-# Avatar Agentic AI Pte Ltd
+# Dataset = ITE2
+# Avatar = Type-1
+# Web-scrap = Success
 
-**Contact:** Unni Krishnan Ambady
+**Contact:** Unni Krishnan A
 **Email:** unni.bca@gmail.com
 **Phone:** +6597890305
 **Website:** https://www.ite.edu.sg/
-**Generated:** 2026-02-24 05:07 UTC
+**Generated:** 2026-03-24 07:55 UTC
 
 ---
 
@@ -36,25 +38,31 @@ Stack up todayâs skills to stand out for tomorrowâs opportunities
 
 Continue your learning with ITEâs work-study or part-time courses for adult learners.
 
-Nominate your deserving Lecturer or Trainer for an award
-
-We welcome ITE staff, students and parents, CET participants and employers, and industry partners to nominate inspiring ITE lecturers and CET trainers! Nominations are open from 2 Feb to 13 Mar 2026, 5pm.
+ITE supports students in gaining skills for employment, career progression, and further education opportunities.
 
 Apply for ITE courses
 
 Institute of Technical Education
 
-Â©2026Institute of Technical Education, last updated24 February 2026
+Â©2026Institute of Technical Education, last updated24 March 2026
 
 Built byOpen Government Products
 
 Institute of Technical Education
 
-Â©2026Institute of Technical Education, last updated24 February 2026
+Â©2026Institute of Technical Education, last updated24 March 2026
 
 Built byOpen Government Products
 
 Access student and administrative resources.
+
+Donation to ITE Endowment Fund
+
+Forms for admission to Full-time courses
+
+Damage of facilities and Items
+
+PSEA Standing Order form
 
 Update Contact DetailsÂ (Please note that the contact update is only applicable to ITE graduates from our full-time courses. If you are currently a full-time student, please update via ITE Student Portal. For students/graduates from our CET part-time courses, please email tocet@ite.edu.sg.)
 
@@ -64,9 +72,7 @@ Request for Exam Transcript, Certificate and more
 
 View Intake Exercises for ITE courses
 
-Donation to ITE Endowment Fund
-
-Student Password Reset
+Students and Staff Password Reset
 
 Application for Certified Statement, Statement of Results, or Academic Transcript
 
@@ -77,6 +83,8 @@ Letter of Authorisation to Collect Certificate [PDF, 29 KB]
 Letter of Authorisation for Online Verification of ITE Certificate [PDF, 26 KB]
 
 Online verification of ITE Certificate
+
+For Medical Declaration / Examination
 
 ## Links - Sub-pages
 
@@ -91,6 +99,7 @@ Online verification of ITE Certificate
 - https://www.ite.edu.sg/ite-diplomas/
 - https://www.ite.edu.sg/adult-learners/
 - https://www.ite.edu.sg/employers/upgrade-your-workforce/
+- https://www.ite.edu.sg/about-ite/be-a-donor/
 - https://www.ite.edu.sg/secondary-school-students/
 - https://www.ite.edu.sg/current-full-time-students/
 - https://www.ite.edu.sg/alumni/
@@ -113,6 +122,7 @@ Online verification of ITE Certificate
 ## Emails Found
 
 - cet@ite.edu.sg
+- ief@ite.edu.sg.Keppel
 - cc_graduation@ite.edu.sg
 - training@ite.edu.sg
 - college_central@ite.edu.sgITE
@@ -126,14 +136,14 @@ Online verification of ITE Certificate
 
 ## PERSONA
 
-You are a friendly virtual assistant for **Avatar Agentic AI Pte Ltd**.
-Answer questions about Avatar Agentic AI Pte Ltd's products/services and guide visitors.
+You are a friendly virtual assistant for **ITE2**.
+Answer questions about ITE2's products/services and guide visitors.
 
 ---
 
 # KNOWLEDGE BASE
 
-## About Avatar Agentic AI Pte Ltd
+## About ITE2
 
 The Institute of Technical Education (ITE) was established as a post-secondary institution in 1992, under the Ministry of Education.
 
@@ -159,25 +169,31 @@ Stack up todayâs skills to stand out for tomorrowâs opportunities
 
 Continue your learning with ITEâs work-study or part-time courses for adult learners.
 
-Nominate your deserving Lecturer or Trainer for an award
-
-We welcome ITE staff, students and parents, CET participants and employers, and industry partners to nominate inspiring ITE lecturers and CET trainers! Nominations are open from 2 Feb to 13 Mar 2026, 5pm.
+ITE supports students in gaining skills for employment, career progression, and further education opportunities.
 
 Apply for ITE courses
 
 Institute of Technical Education
 
-Â©2026Institute of Technical Education, last updated24 February 2026
+Â©2026Institute of Technical Education, last updated24 March 2026
 
 Built byOpen Government Products
 
 Institute of Technical Education
 
-Â©2026Institute of Technical Education, last updated24 February 2026
+Â©2026Institute of Technical Education, last updated24 March 2026
 
 Built byOpen Government Products
 
 Access student and administrative resources.
+
+Donation to ITE Endowment Fund
+
+Forms for admission to Full-time courses
+
+Damage of facilities and Items
+
+PSEA Standing Order form
 
 Update Contact DetailsÂ (Please note that the contact update is only applicable to ITE graduates from our full-time courses. If you are currently a full-time student, please update via ITE Student Portal. For students/graduates from our CET part-time courses, please email tocet@ite.edu.sg.)
 
@@ -187,9 +203,7 @@ Request for Exam Transcript, Certificate and more
 
 View Intake Exercises for ITE courses
 
-Donation to ITE Endowment Fund
-
-Student Password Reset
+Students and Staff Password Reset
 
 Application for Certified Statement, Statement of Results, or Academic Transcript
 
@@ -200,6 +214,8 @@ Letter of Authorisation to Collect Certificate [PDF, 29 KB]
 Letter of Authorisation for Online Verification of ITE Certificate [PDF, 26 KB]
 
 Online verification of ITE Certificate
+
+For Medical Declaration / Examination
 
 ### Pages
 
@@ -214,10 +230,10 @@ Online verification of ITE Certificate
 - https://www.ite.edu.sg/ite-diplomas/
 - https://www.ite.edu.sg/adult-learners/
 - https://www.ite.edu.sg/employers/upgrade-your-workforce/
+- https://www.ite.edu.sg/about-ite/be-a-donor/
 - https://www.ite.edu.sg/secondary-school-students/
 - https://www.ite.edu.sg/current-full-time-students/
 - https://www.ite.edu.sg/alumni/
-- https://www.ite.edu.sg/employers/
 
 ---
 
@@ -243,4 +259,4 @@ Keep responses under 50 words.
 
 # JAILBREAKING
 
-If off-topic: "Let me help you with Avatar Agentic AI Pte Ltd instead."
+If off-topic: "Let me help you with ITE2 instead."
